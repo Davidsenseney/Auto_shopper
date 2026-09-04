@@ -1,0 +1,95 @@
+.layout-container{
+    display: flex;
+    height: 100vh;
+    width: 100vw;
+    overflow: hidden;
+}
+
+.sidebar{
+    width: 260px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    padding: 1.5rem;
+    background: 1px solid #ccc;
+}
+
+.sidebar-nav ul{
+    list-style: none;
+    padding: 0;
+    margin: 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.main-content{
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 2rem;
+    overflow-y: auto;
+}
+
+.top-header{
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 2rem;
+}
+
+.header-actions{
+    display: flex;
+    gap: 1rem;
+}
+
+.stats-grid{
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.stat-card{
+    padding: 1rem;
+    border: 1px solid #ccc;
+    border-radius: 0.5rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-height: 120px;
+}
+
+.workspace-area{
+    flex-grow:1;
+    border: 1px solid #ccc;
+    padding: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 400px;
+}
+
+.empty-state-content{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    max-width: 500px;
+    gap: 1rem;
+}
+
+.empty-state-content{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    max-width: 500px;
+    gap: 1rem;
+}
+
+.empty-state-actions{
+    display: flex;
+    gap: 1rem;
+    margin-top: 1rem;
+}
