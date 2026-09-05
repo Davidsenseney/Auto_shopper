@@ -1,10 +1,16 @@
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import Hestia from './pages/hestia';
+import DashboardLayout from './components/DashboardLayout.jsx';
 
-function App() {
+export default function App() {
   return (
-    <div>
-      <h1>Hello, React!</h1>
-      <p>This is my new page.</p>
-    </div>
-  )
+    <Router>
+      <Routes>
+        <Route path="/" element={<DashboardLayout />}>
+          <Route index element={<Hestia />} />
+        </Route>
+      </Routes>
+    </Router>
+  );
 }
-export default App
