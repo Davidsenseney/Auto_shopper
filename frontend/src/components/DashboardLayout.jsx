@@ -10,7 +10,7 @@ export default function DashboardLayout(){
         <div className="sidebar-brand"> logo</div>
         <nav className="sidebar-nav">
           <ul>
-            <li><a href="/pages/hestia.jsx">Dashboard</a> Hestia</li>
+            <li><a href="/pages/hestia.jsx">Dashboard</a> Bri</li>
             <li>Recipies</li>
             <li>Goals</li>
             <li>shopping </li>
@@ -21,7 +21,7 @@ export default function DashboardLayout(){
     <main className="main-content">
       <header className="top-header">
         <div className='header-titles'>
-          <h1> Hello and Welcome to Hestia</h1>
+          <h1> Hello and Welcome to Bri</h1>
             <p> I am ready to help you Eat well and live well! </p>
         </div>  
         <div className="header-actions">
