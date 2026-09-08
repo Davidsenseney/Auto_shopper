@@ -1,6 +1,6 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import Hestia from './pages/hestia';
+import Bri from './pages/bri.jsx';
 import DashboardLayout from './components/DashboardLayout.jsx';
 
 export default function App() {
@@ -8,7 +8,7 @@ export default function App() {
     <Router>
       <Routes>
         <Route path="/" element={<DashboardLayout />}>
-          <Route index element={<Hestia />} />
+          <Route index element={<Bri />} />
         </Route>
       </Routes>
     </Router>

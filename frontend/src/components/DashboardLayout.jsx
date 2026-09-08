@@ -6,7 +6,7 @@ export default function DashboardLayout(){
     return (
   <div className="layout-container">  
     
-      <aside clasName="sidebar">
+      <aside className="sidebar">
         <div className="sidebar-brand"> logo</div>
         <nav className="sidebar-nav">
           <ul>

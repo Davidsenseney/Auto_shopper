@@ -1,6 +1,6 @@
 import react from 'react';
 
-export default function Hestia() {
+export default function Bri() {
   return (
     <div>
       <h1>Welcome to Hestia</h1>
