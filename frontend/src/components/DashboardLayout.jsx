@@ -8,13 +8,13 @@ export default function DashboardLayout(){
   <div className="layout-container">  
     
       <aside className="sidebar">
-        <div className="sidebar-brand"> logo</div>
+        <div className="sidebar-brand"> LoGo</div>
         <nav className="sidebar-nav">
           <ul>
             <li><a href="/pages/hestia.jsx">Dashboard</a> Bri</li>
             <li>Recipies</li>
             <li>Goals</li>
-            <li>shopping </li>
+            <li>Shopping </li>
             <li>Settings</li>
           </ul>
         </nav>
