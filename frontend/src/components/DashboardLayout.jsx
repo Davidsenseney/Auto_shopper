@@ -2,6 +2,7 @@ import React from 'react';
 import {Outlet} from 'react-router-dom';
 import './DashboardLayout.css';
 
+
 export default function DashboardLayout(){
     return (
   <div className="layout-container">  
