@@ -1,5 +1,5 @@
 .layout-container{
-    background-color: #3fdb2b;
+    background-color: var(--bg);
     display: flex;
     height: 100vh;
     width: 100vw;
