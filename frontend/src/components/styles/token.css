@@ -1,0 +1,25 @@
+:root{
+    --brand-primary: #2C731D;
+    --brand-primary-hover: #194A0F;
+    --brand-accent: #4FC337;
+    --brand-highlight: #63EF46;
+
+    --surface-tint: #DEFDD8;
+    --sidebar-bg: #2C731D;
+    --sidebar-item-active: #194A0F;
+    --sidebar-text: #DEFDD8;
+    --sidebar-text-muted: #8EB785;
+
+    --bg-app: #F8FAF7;
+    --bg-surface: #FFFFFF;
+    --border-subtle: #E2E8E0;
+    --border-strong: #C2C9CC;
+
+    --text-primary: #191B1C;
+    --text-secondary: #595F61;
+    --text-on-brand: #FFFFFF;
+
+    --accent-info: #46B8EF;
+    --accent-warning: #EF7D46;
+    --accent-special: #D246EF;
+}
