@@ -30,10 +30,6 @@ export default function DashboardLayout(){
           <h1> Hello and Welcome to Bri</h1>
             <p> I am ready to help you Eat well and live well! </p>
         </div>  
-        <div className="header-actions">
-          <button className="btn-secondary">quick actions</button>
-          <button className="btn-primary">Get Started </button>
-        </div>
       </header>
       <section className="stats-grid">
         <div className="stat-card">
