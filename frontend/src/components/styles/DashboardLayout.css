@@ -1,0 +1,203 @@
+
+
+.layout-container{
+    background-color: var(--bg);
+    display: flex;
+    height: 100vh;
+    width: 100vw;
+    overflow: hidden;
+}
+
+.sidebar {
+  width: 260px;
+  background-color: var(--sidebar-bg);
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 1.5rem 1rem; 
+  border-right: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.sidebar-logo {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center; 
+  gap: 0.75rem;                
+  padding: 0 0.5rem;
+  margin-top: 3rem;          
+  margin-bottom: 6rem;     
+}
+
+.logo-container {
+  width: 85px;                 
+  height: 85px;
+  flex-shrink: 0;
+  background-color: var(--brand-highlight);
+  border: 2px solid var(--accent-info); 
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+  padding: 6px;   
+}
+
+.logo-container img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;       /
+  display: block;
+}
+
+.sidebar-nav {
+  width: 100%;
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+}
+
+.sidebar-nav ul{
+    border:  #191B1C;
+    padding: 0;
+    margin: 0rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0rem;
+}
+
+.sidebar-nav a {
+  background-color: var(--brand-highlight);
+  border: 1.5px solid var(--accent-info);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 0.75rem;
+  padding: 1.6rem 1rem;
+  border-radius: .5px;
+  color: #082533;
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.sidebar-nav a:hover {
+  color: #ffffff;
+  background-color: rgba(255, 255, 255, 0.08);
+}
+
+.sidebar-nav a.active {
+  color: #ffffff;
+  background-color: var(--sidebar-item-active);
+  border-left: 3px solid var(--brand-accent);
+}
+
+.main-content{
+    background-color: var(--brand-primary);
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 2rem;
+    overflow-y: auto;
+}
+
+.top-header {
+  background-color: var(--brand-primary);
+  display: flex;
+  justify-content: center;
+  text-align: center;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.btn-primary {
+  display: inline-flex;
+  background-color: var(--brand-primary);
+  color: var(--text-on-brand);
+  border: none;
+  padding: 0.65rem 1.25rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  border-radius: 6px;
+  cursor: pointer;
+  box-shadow: 0 1px 2px rgba(44, 115, 29, 0.2);
+  transition: background-color 0.2s ease;
+}
+
+.btn-primary:hover {
+  background-color: var(--brand-primary-hover);
+}
+
+.header-actions{
+    display: flex;
+    gap: 1rem;
+}
+
+.stats-grid{
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.stat-card {
+  background-color: var(--bg-surface);
+  padding: 1.25rem;
+  border-radius: 8px;
+  border: 1px solid var(--border-subtle);
+  box-shadow: 0 1px 3px rgba(25, 27, 28, 0.04);
+}
+
+.stat-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  background-color: var(--surface-tint);  
+  color: var(--brand-primary);            
+  padding: 0.2rem 0.55rem;
+  border-radius: 20px;
+  font-size: 0.775rem;
+  font-weight: 600;
+}
+
+.workspace-area {
+  flex-grow: 1;
+  background-color: var(--bg-surface);
+  border: 1.5px dashed var(--border-subtle);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 380px;
+}
+
+.empty-state-content{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    max-width: 500px;
+    gap: 1rem;
+}
+
+.empty-state-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background-color: var(--surface-tint);   /* #DEFDD8 */
+  color: var(--brand-primary);             /* #2C731D */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.empty-state-actions{
+    display: flex;
+    gap: 1rem;
+    margin-top: 1rem;
+}

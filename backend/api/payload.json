@@ -1,0 +1,50 @@
+{
+  "user_profile": {
+    "health_requirements": {
+      "requirements": ["gluten_free", "dairy_free"],
+      "allergies": ["peanuts", "shellfish"],
+      "requests": ["low_sodium", "high_protein"],
+      "calories_per_meal": 500,
+      "macronutrient_distribution": "40% protein, 30% carbs, 30% fat",
+      "micronutrient_needs": ["vitamin D", "calcium", "iron"],
+      "exercise_level": "moderate",
+      "fitness_goals": ["weight loss", "muscle gain"]
+    },
+    "store_preferences": ["store_id_123"],
+    "budget": 100.00
+  },
+  "recent_chat_context": {
+    "number_of_people": 4,
+    "number_of_meals": 5,
+    "meal_frequency": "3 meals per day",
+    "snack_preferences": ["healthy", "chips"],
+    "preferred_meal_time": ["lunch", "dinner"],
+    "cooking_skill_level": "intermediate",
+    "dietary_restrictions": ["gluten_free", "dairy_free"],
+    "cuisine_preferences": ["italian", "mexican", "chinese"],
+    "spice_level": "medium",
+    "carb_preference": "low_carb",
+    "favorite_ingredients": ["chicken", "broccoli", "garlic"],
+    "disliked_ingredients": ["peanuts", "shellfish"],
+    "cooking_time_minutes": 30,
+    "meal_type": "dinner",
+    "preferred_cooking_method": ["stir_fry", "bake"]
+  },
+  "recipe_history": {
+    "recently_cooked": ["chicken stir fry", "quinoa salad", "grilled salmon"],
+    "favorites": ["chicken stir fry", "quinoa salad"],
+    "disliked": ["grilled salmon"],
+    "ratings": [
+      {"recipe": "chicken stir fry", "rating": 5},
+      {"recipe": "quinoa salad", "rating": 4}
+    ]
+  },
+  "ingredient_inventory": [
+    {"ingredient": "chicken_breast", "amount": 5},
+    {"ingredient": "garlic", "amount": 2}
+  ],
+  "available_store_catalog": [
+    {"item": "chicken_breast", "price": 5.99, "in_stock": true},
+    {"item": "black_beans", "price": 1.29, "in_stock": true}
+  ]
+}
