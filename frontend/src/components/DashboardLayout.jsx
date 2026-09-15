@@ -19,7 +19,7 @@ export default function DashboardLayout(){
             <li><NavLink to="/pages/bri.jsx">Dashboard</NavLink></li>
             <li><NavLink to="/pages/recipies.jsx">Recipes</NavLink></li>
             <li><NavLink to="/health">Health</NavLink></li>
-            <li><NavLink to="/pages/shopping.jsx">Shopping</NavLink></li>
+            <li><NavLink to="/shopping">Shopping</NavLink></li>
             <li><NavLink to="/pages/settings.jsx">Settings</NavLink></li>
           </ul>
         </nav>

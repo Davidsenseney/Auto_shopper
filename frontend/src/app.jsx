@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Bri from './pages/bri.jsx';
 import DashboardLayout from './components/DashboardLayout.jsx';
 import Health from './pages/health.jsx';
+import Shopping from './pages/shopping.jsx';
 
 export default function App() {
   return (
@@ -11,6 +12,7 @@ export default function App() {
         <Route path="/" element={<DashboardLayout />}>
           <Route index element={<Bri />} /> 
           <Route path="health" element={<Health />} />
+          <Route path="shopping" element={<Shopping />} />
         </Route>
       </Routes>
     </Router>
