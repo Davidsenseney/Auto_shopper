@@ -1,0 +1,10 @@
+
+.recipes-container { 
+    padding: 20px; 
+    color: blue; 
+} 
+
+.recipes-container h1 { 
+    font-size: 2rem; 
+    color: red; 
+}
