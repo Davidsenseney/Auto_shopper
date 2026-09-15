@@ -1,7 +1,13 @@
 import React from 'react';
-import "./components/recipes.css";
+import '../components/styles/recipes.css';
 
 function Recipes() {
-    <h1>Recipes</h1>
-    
+    return (
+        <div className="recipes-container">
+            <h1>Recipes</h1>
+            <p>Welcome to the Recipes page!</p>
+        </div>
+    )
 }
+
+export default Recipes;
