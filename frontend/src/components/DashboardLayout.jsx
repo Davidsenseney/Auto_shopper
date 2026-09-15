@@ -16,9 +16,9 @@ export default function DashboardLayout(){
         </div>
         <nav className="sidebar-nav">
           <ul>
-            <li><NavLink to="/pages/hestia.jsx">Dashboard</NavLink></li>
-            <li><NavLink to="/pages/recipies.jsx">Recipies</NavLink></li>
-            <li><NavLink to="/pages/goals.jsx">Goals</NavLink></li>
+            <li><NavLink to="/pages/bri.jsx">Dashboard</NavLink></li>
+            <li><NavLink to="/pages/recipies.jsx">Recipes</NavLink></li>
+            <li><NavLink to="/health">Health</NavLink></li>
             <li><NavLink to="/pages/shopping.jsx">Shopping</NavLink></li>
             <li><NavLink to="/pages/settings.jsx">Settings</NavLink></li>
           </ul>
