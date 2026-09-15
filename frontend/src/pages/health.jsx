@@ -1,6 +1,6 @@
 
 import React from 'react';
-import './Health.css';
+import '../components/styles/Health.css';
 
 
 function Health() {
