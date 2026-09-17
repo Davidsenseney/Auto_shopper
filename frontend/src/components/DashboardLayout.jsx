@@ -4,6 +4,7 @@ import './styles/DashboardLayout.css';
 import logo from '../assets/brilogo.png';
 
 
+
 export default function DashboardLayout(){
     return (
   <div className="layout-container">  
@@ -17,7 +18,7 @@ export default function DashboardLayout(){
         <nav className="sidebar-nav">
           <ul>
             <li><NavLink to="/pages/bri.jsx">Dashboard</NavLink></li>
-            <li><NavLink to="/pages/recipies.jsx">Recipes</NavLink></li>
+            <li><NavLink to="/recipes">Recipes</NavLink></li>
             <li><NavLink to="/health">Health</NavLink></li>
             <li><NavLink to="/shopping">Shopping</NavLink></li>
             <li><NavLink to="/pages/settings.jsx">Settings</NavLink></li>

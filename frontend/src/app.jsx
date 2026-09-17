@@ -4,6 +4,7 @@ import Bri from './pages/bri.jsx';
 import DashboardLayout from './components/DashboardLayout.jsx';
 import Health from './pages/health.jsx';
 import Shopping from './pages/shopping.jsx';
+import Recipes from './pages/recipes.jsx';
 
 export default function App() {
   return (
@@ -13,6 +14,7 @@ export default function App() {
           <Route index element={<Bri />} /> 
           <Route path="health" element={<Health />} />
           <Route path="shopping" element={<Shopping />} />
+          <Route path="recipes" element={<Recipes />} />
         </Route>
       </Routes>
     </Router>
