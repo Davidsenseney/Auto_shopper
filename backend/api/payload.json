@@ -44,7 +44,7 @@
     {"ingredient": "garlic", "amount": 2}
   ],
   "available_store_catalog": [
-    {"item": "chicken_breast", "price": 5.99, "in_stock": true},
-    {"item": "black_beans", "price": 1.29, "in_stock": true}
+    {"item": "chicken_breast", "price": 5.99, "in_stock": true, "sku": "sku 001"},
+    {"item": "black_beans", "price": 1.29, "in_stock": true, "sku": "sku 002"}
   ]
 }
