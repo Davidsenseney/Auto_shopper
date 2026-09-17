@@ -17,7 +17,7 @@ export default function DashboardLayout(){
         </div>
         <nav className="sidebar-nav">
           <ul>
-            <li><NavLink to="/pages/bri.jsx">Dashboard</NavLink></li>
+            <li><NavLink to="/">Bri</NavLink></li>
             <li><NavLink to="/recipes">Recipes</NavLink></li>
             <li><NavLink to="/health">Health</NavLink></li>
             <li><NavLink to="/shopping">Shopping</NavLink></li>
