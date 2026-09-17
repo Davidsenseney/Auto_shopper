@@ -12,7 +12,6 @@ export default function App() {
         <Route path="/" element={<DashboardLayout />}>
           <Route index element={<Bri />} /> 
           <Route path="health" element={<Health />} />
-          <Route path="shopping" element={<Shopping />} />
         </Route>
       </Routes>
     </Router>
