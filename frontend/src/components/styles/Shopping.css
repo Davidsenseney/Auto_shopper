@@ -1,0 +1,11 @@
+
+
+.shopping-container p {
+    padding: 20px;
+    color: blue;
+}
+
+.shopping-container h1 {
+    font-size: 4rem;
+    color: red;
+}
