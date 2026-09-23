@@ -1,4 +1,6 @@
 #ignoring environment files
 .env
 *.env
-bri---ai-auto-shopper (1)/
+
+#ignoring stitchversion directory
+stitchversion/
