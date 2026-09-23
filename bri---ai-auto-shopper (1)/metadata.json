@@ -1,0 +1,6 @@
+{
+  "name": "Bri - AI Auto-Shopper",
+  "description": "AI-powered grocery shopper and nutrition dashboard with meal planning, smart cart auto-optimization, macro balancer, and Kroger integration.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
