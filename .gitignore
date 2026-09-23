@@ -1,3 +1,6 @@
 #ignoring environment files
 .env
 *.env
+
+#ignoring stitchversion directory
+stitchversion/
