@@ -201,7 +201,14 @@ export function App() {
             />
           )
 } 
-
+          {activeScreen === 'recipes' && (
+            <RecipesScreen
+              recipes={recipes}
+              searchQuery={searchQuery}
+              onSelectRecipe={setSelectedRecipe}
+              onAddRecipeToCart={handleAddRecipeToCart}
+            />
+          )}
           {activeScreen === 'health' && (
             <HealthScreen
               allergies={allergies}

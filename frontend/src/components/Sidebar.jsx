@@ -4,15 +4,13 @@ import {
   UtensilsCrossed,
   HeartPulse,
   ShoppingBag,
-  Settings,
   Store,
   Sparkles,
-  Database,
 } from 'lucide-react';
 
 /**
  * Sidebar Navigation (JavaScript / JSX)
- * Persistent sidebar with Bri logo, active screen indicator, Kroger sync card, and Django integration tab.
+ * Persistent sidebar with Bri logo, active screen indicator, and Kroger sync card.
  */
 export const Sidebar = ({
   activeScreen,
@@ -45,12 +43,6 @@ export const Sidebar = ({
       label: 'Shopping & Cart',
       icon: ShoppingBag,
       badge: cartCount ? `${cartCount}` : null,
-    },
-    {
-      id: 'settings',
-      label: 'Django Integration & Settings',
-      icon: Database,
-      badge: 'API Ready',
     },
   ];
 
@@ -117,8 +109,6 @@ export const Sidebar = ({
                     className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
                       isActive
                         ? 'bg-[#63EF46] text-[#0c2b14]'
-                        : item.id === 'settings'
-                        ? 'bg-emerald-100 text-emerald-800'
                         : 'bg-[#EAEAEA] text-[#595F61]'
                     }`}
                   >
