@@ -21,7 +21,6 @@ export default function DashboardLayout(){
             <li><NavLink to="/recipes">Recipes</NavLink></li>
             <li><NavLink to="/health">Health</NavLink></li>
             <li><NavLink to="/shopping">Shopping</NavLink></li>
-            <li><NavLink to="/pages/settings.jsx">Settings</NavLink></li>
           </ul>
         </nav>
       </aside>

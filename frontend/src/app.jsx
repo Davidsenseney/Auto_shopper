@@ -46,81 +46,74 @@ export function App() {
   // Active Recipe for Detail Modal
   const [selectedRecipe, setSelectedRecipe] = useState(null);
 
-  // Assistant Chat Handler
-  const handleSendMessage = (content) => {
-    const userMessage = {
-      id: `msg-${Date.now()}`,
-      sender: 'user',
-      senderName: 'You',
-      timestamp: 'Just now',
-      content,
-    };
-
-    setChatMessages((prev) => [...prev, userMessage]);
-
     // Simulated Smart Shopper AI Response
-    setTimeout(() => {
-      let replyContent = "I've checked your meal plan and Kroger stock. Everything is aligned with your dietary framework!";
-      let actionCards = undefined;
-
-      const lower = content.toLowerCase();
-      if (lower.includes('protein') || lower.includes('snack')) {
-        replyContent = 'Here are 2 high-protein snack ideas that hit your 160g protein target while maintaining low sodium:';
-        actionCards = [
-          {
-            id: `rec-snack-${Date.now()}`,
-            name: 'Greek Yogurt & Almond Crunch',
-            price: 4.29,
-            fiberGrams: 5,
-            proteinGrams: 18,
-            calories: 190,
-            categoryIcon: 'grain',
-          },
-          {
-            id: `rec-snack-2-${Date.now()}`,
-            name: 'Wild Salmon Jerky Strips (Seed-Oil Free)',
-            price: 6.99,
-            proteinGrams: 22,
-            fiberGrams: 1,
-            calories: 140,
-            customTag: '🐟 Wild Caught',
-            categoryIcon: 'eco',
-          },
-        ];
-      } else if (lower.includes('dairy') || lower.includes('oat')) {
-        replyContent = 'Swapped 2 dairy ingredients in your auto-cart for certified organic oat milk and almond yogurt!';
-      }
-
-      const botMessage = {
-        id: `msg-bot-${Date.now()}`,
-        sender: 'assistant',
-        senderName: 'Bri Assistant',
+    const handleSendMessage = async (content) => {
+      const userMessage = {
+        id: `msg-${Date.now()}`,
+        sender: 'user',
+        senderName: 'You',
         timestamp: 'Just now',
-        content: replyContent,
-        actionCards,
+        content,
       };
-
-      setChatMessages((prev) => [...prev, botMessage]);
-    }, 700);
-  };
-
-  // Quick Add Item from Chat Card to Cart
-  const handleQuickAddCart = (card) => {
-    const newItem = {
-      id: `cart-${Date.now()}`,
-      name: card.name,
-      storeBadge: 'Kroger Fresh Direct',
-      attributeBadge: 'Organic / Clean',
-      linkedRecipe: 'Added via Bri AI Assistant recommendation',
-      price: card.price,
-      unitPriceInfo: `$${card.price.toFixed(2)}/item`,
-      quantity: 1,
-      iconType: card.categoryIcon === 'grain' ? 'oats' : 'broccoli',
+      const updatedMessages = [...chatMessages, userMessage];
+      setChatMessages(updatedMessages);
+      const payload = {
+        messages: updatedMessages.map((m) => ({
+          sender: m.sender === 'user' ? 'user' : 'bot',
+          text: m.content,
+        })),
+      };
+      try {
+        const response = await fetch('/api/chat/', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+        if (!response.ok) throw new Error('Chat request failed');
+        const data = await response.json();
+        setChatMessages((prev) => [
+          ...prev,
+          {
+            id: `msg-bot-${Date.now()}`,
+            sender: 'assistant',
+            senderName: 'Bri Assistant',
+            timestamp: 'Just now',
+            content: data.reply,
+          },
+        ]);
+      } catch (err) {
+        setChatMessages((prev) => [
+          ...prev,
+          {
+            id: `msg-err-${Date.now()}`,
+            sender: 'assistant',
+            senderName: 'Bri Assistant',
+            timestamp: 'Just now',
+            content: 'Sorry, there was an error processing your request.',
+          },
+        ]);
+      }
     };
+    const handleGoShopping=async()=>{
+      const message = chatMessages.map((m) => ({
+        sender: m.sender === 'user' ? 'user' : 'model',
+        text: m.content,
+      }));
 
-    setCartItems((prev) => [newItem, ...prev]);
-  };
-
+      try {
+        const response = await fetch('/api/shopping/extract/', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ messages: message }),
+        });
+        if (!response.ok) throw new Error('Shopping request failed');
+        const data = await response.json();
+        console.log("Saved RecentChat", data.id, data.id.source_messages);
+      } catch (err) {
+        console.error(err);
+        alert('Could not save Chat preferences for shopping. Please try again.');
+      }
+    };
   // Add Recipe Ingredients to Cart
   const handleAddRecipeToCart = (recipe) => {
     const missingIngredients = recipe.ingredients.filter(
@@ -201,21 +194,20 @@ export function App() {
               stats={stats}
               chatMessages={chatMessages}
               onSendMessage={handleSendMessage}
-              onQuickAddCart={handleQuickAddCart}
-              onGoShopping={() => setActiveScreen('shopping')}
+              onQuickAddCart={()=>{}}
+              onGoShopping={handleGoShopping}
               cartItems={cartItems}
             />
-          )}
-
+          )
+} 
           {activeScreen === 'recipes' && (
             <RecipesScreen
               recipes={recipes}
-              onSelectRecipe={(recipe) => setSelectedRecipe(recipe)}
-              onAddRecipeToCart={handleAddRecipeToCart}
               searchQuery={searchQuery}
+              onSelectRecipe={setSelectedRecipe}
+              onAddRecipeToCart={handleAddRecipeToCart}
             />
           )}
-
           {activeScreen === 'health' && (
             <HealthScreen
               allergies={allergies}
@@ -248,5 +240,4 @@ export function App() {
     </div>
   );
 }
-
 export default App;
