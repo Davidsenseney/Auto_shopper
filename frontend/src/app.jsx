@@ -15,7 +15,7 @@ import {
   INITIAL_DIETARY_RESTRICTIONS,
   INITIAL_DIETARY_FRAMEWORKS,
   INITIAL_CART_ITEMS,
-} from './data/initialData';
+ } from './data/initialData';
 
 /**
  * ============================================================================
