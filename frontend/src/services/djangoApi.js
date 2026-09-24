@@ -56,10 +56,14 @@ export const DjangoApi = {
   getDashboardOverview: () => request('/dashboard/overview/'),
 
   // 2. Chat with Assistant
-  sendChatMessage: (message) =>
-    request('/assistant/chat/', {
+  sendChatMessage: (messages) =>
+    fetch('/api/chat/', {
       method: 'POST',
-      body: JSON.stringify({ message }),
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ messages }),
+    }).then((r) => {
+      if (!r.ok) throw new Error('Chat failed');
+      return r.json();
     }),
 
   // 3. Recipes Endpoints

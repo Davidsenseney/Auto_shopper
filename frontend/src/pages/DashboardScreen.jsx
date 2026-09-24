@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   TrendingUp,
   ShoppingBag,
@@ -47,6 +47,15 @@ export const DashboardScreen = ({
   const [activeTab, setActiveTab] = useState('overview');
   const [inputText, setInputText] = useState('');
   const [addedItems, setAddedItems] = useState({});
+
+
+  const chatContainerRef = useRef(null);
+
+  useEffect(() => {
+    if (chatContainerRef.current) {
+      chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+    }
+  }, [chatMessages]);
 
   const handleSend = (e) => {
     if (e) e.preventDefault();
@@ -192,7 +201,7 @@ export const DashboardScreen = ({
         {activeTab === 'overview' && (
           <div className="p-6 lg:p-7 flex flex-col gap-5 max-w-[960px] w-full mx-auto">
             {/* Conversation Feed */}
-            <div className="flex flex-col gap-5 overflow-y-auto max-h-[460px] pr-2">
+            <div ref={chatContainerRef} className="flex flex-col gap-5 overflow-y-auto max-h-[460px] pr-2">
               {chatMessages.map((msg) => {
                 const isAssistant = msg.sender === 'assistant';
 
@@ -314,6 +323,7 @@ export const DashboardScreen = ({
                   </div>
                 );
               })}
+              <div ref={chatContainerRef} />
             </div>
 
             {/* Bottom Suggestions & Persistent Chat Input */}
@@ -455,7 +465,7 @@ export const DashboardScreen = ({
       {/* Prominent Full-Width "Go Shopping" Button */}
       <div className="w-full pt-1 pb-4">
         <button
-          onClick={onGoShopping}
+          onClick={()=>onGoShopping()}
           id="go-shopping-btn"
           className="w-full bg-gradient-to-r from-[#63EF46] to-[#46B8EF] text-[#0b2210] font-bold text-base py-3.5 px-6 rounded-full flex items-center justify-center gap-2.5 shadow-[0_4px_14px_rgba(70,184,239,0.35)] hover:shadow-[0_6px_18px_rgba(70,184,239,0.45)] hover:-translate-y-0.5 transition-all cursor-pointer"
         >
