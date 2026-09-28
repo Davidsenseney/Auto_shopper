@@ -46,74 +46,74 @@ export function App() {
   // Active Recipe for Detail Modal
   const [selectedRecipe, setSelectedRecipe] = useState(null);
 
-    // Simulated Smart Shopper AI Response
-    const handleSendMessage = async (content) => {
-      const userMessage = {
-        id: `msg-${Date.now()}`,
-        sender: 'user',
-        senderName: 'You',
-        timestamp: 'Just now',
-        content,
-      };
-      const updatedMessages = [...chatMessages, userMessage];
-      setChatMessages(updatedMessages);
-      const payload = {
-        messages: updatedMessages.map((m) => ({
-          sender: m.sender === 'user' ? 'user' : 'bot',
-          text: m.content,
-        })),
-      };
-      try {
-        const response = await fetch('/api/chat/', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload),
-        });
-        if (!response.ok) throw new Error('Chat request failed');
-        const data = await response.json();
-        setChatMessages((prev) => [
-          ...prev,
-          {
-            id: `msg-bot-${Date.now()}`,
-            sender: 'assistant',
-            senderName: 'Bri Assistant',
-            timestamp: 'Just now',
-            content: data.reply,
-          },
-        ]);
-      } catch (err) {
-        setChatMessages((prev) => [
-          ...prev,
-          {
-            id: `msg-err-${Date.now()}`,
-            sender: 'assistant',
-            senderName: 'Bri Assistant',
-            timestamp: 'Just now',
-            content: 'Sorry, there was an error processing your request.',
-          },
-        ]);
-      }
+  // Simulated Smart Shopper AI Response
+  const handleSendMessage = async (content) => {
+    const userMessage = {
+      id: `msg-${Date.now()}`,
+      sender: 'user',
+      senderName: 'You',
+      timestamp: 'Just now',
+      content,
     };
-    const handleGoShopping=async()=>{
-      const message = chatMessages.map((m) => ({
-        sender: m.sender === 'user' ? 'user' : 'model',
+    const updatedMessages = [...chatMessages, userMessage];
+    setChatMessages(updatedMessages);
+    const payload = {
+      messages: updatedMessages.map((m) => ({
+        sender: m.sender === 'user' ? 'user' : 'bot',
         text: m.content,
-      }));
-
-      try {
-        const response = await fetch('/api/shopping/extract/', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ messages: message }),
-        });
-        if (!response.ok) throw new Error('Shopping request failed');
-        const data = await response.json();
-        console.log("Saved RecentChat", data.id, data.id.source_messages);
-      } catch (err) {
-        console.error(err);
-        alert('Could not save Chat preferences for shopping. Please try again.');
-      }
+      })),
     };
+    try {
+      const response = await fetch('/api/chat/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      if (!response.ok) throw new Error('Chat request failed');
+      const data = await response.json();
+      setChatMessages((prev) => [
+        ...prev,
+        {
+          id: `msg-bot-${Date.now()}`,
+          sender: 'assistant',
+          senderName: 'Bri Assistant',
+          timestamp: 'Just now',
+          content: data.reply,
+        },
+      ]);
+    } catch (err) {
+      setChatMessages((prev) => [
+        ...prev,
+        {
+          id: `msg-err-${Date.now()}`,
+          sender: 'assistant',
+          senderName: 'Bri Assistant',
+          timestamp: 'Just now',
+          content: 'Sorry, there was an error processing your request.',
+        },
+      ]);
+    }
+  };
+  const handleGoShopping = async () => {
+    const message = chatMessages.map((m) => ({
+      sender: m.sender === 'user' ? 'user' : 'model',
+      text: m.content,
+    }));
+
+    try {
+      const response = await fetch('/api/shopping/extract/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ messages: message }),
+      });
+      if (!response.ok) throw new Error('Shopping request failed');
+      const data = await response.json();
+      console.log("Saved RecentChat", data.id, data.id.source_messages);
+    } catch (err) {
+      console.error(err);
+      alert('Could not save Chat preferences for shopping. Please try again.');
+    }
+  };
   // Add Recipe Ingredients to Cart
   const handleAddRecipeToCart = (recipe) => {
     const missingIngredients = recipe.ingredients.filter(
@@ -188,18 +188,18 @@ export function App() {
         />
 
         {/* Screen Router Viewport */}
-        <main className="flex-1 p-4 lg:p-8 max-w-[1400px] w-full mx-auto">
+        <main className="flex-1 p-4 lg:p-8 max-w-[1400px] w-full">
           {activeScreen === 'dashboard' && (
             <DashboardScreen
               stats={stats}
               chatMessages={chatMessages}
               onSendMessage={handleSendMessage}
-              onQuickAddCart={()=>{}}
+              onQuickAddCart={() => { }}
               onGoShopping={handleGoShopping}
               cartItems={cartItems}
             />
           )
-} 
+          }
           {activeScreen === 'recipes' && (
             <RecipesScreen
               recipes={recipes}

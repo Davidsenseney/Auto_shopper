@@ -46,46 +46,12 @@ export const INITIAL_DASHBOARD_STATS = {
 
 export const INITIAL_CHAT_MESSAGES = [
   {
-    id: 'msg-1',
+    id: 'msg-welcome',
     sender: 'assistant',
     senderName: 'Bri Assistant',
-    timestamp: '10:42 AM',
-    content: "Hello John! I've reviewed your pantry and nutrition goals for this week. I found 3 smart swaps that save $14.30 while hitting your protein targets. Would you like me to add them to your auto-cart?",
-  },
-  {
-    id: 'msg-2',
-    sender: 'user',
-    senderName: 'You',
-    timestamp: '10:43 AM',
-    content: "Yes, add the wild salmon and let's check high-fiber breakfast options.",
-  },
-  {
-    id: 'msg-3',
-    sender: 'assistant',
-    senderName: 'Bri Assistant',
-    timestamp: 'Just now',
-    content: 'Added Wild Sockeye Salmon Fillet ($14.20) to your Thursday auto-order! Here are 2 high-fiber breakfast recommendations tailored to your weekly meal plan:',
-    actionCards: [
-      {
-        id: 'rec-oats',
-        name: 'Steel Cut Organic Oats',
-        price: 3.89,
-        fiberGrams: 8,
-        proteinGrams: 7,
-        calories: 150,
-        categoryIcon: 'grain',
-      },
-      {
-        id: 'rec-chia',
-        name: 'Organic Chia & Flax Seed Mix',
-        price: 5.49,
-        fiberGrams: 10,
-        calories: 130,
-        customTag: '🥑 Omega-3s',
-        categoryIcon: 'eco',
-      },
-    ],
-  },
+    timestamp: 'Just Now',
+    content: "Hi! I'm Bri, your AI auto-shopper assistant. How can I help you plan meals, check macros, or build your grocery cart today?",
+  }
 ];
 
 export const INITIAL_RECIPES = [
