@@ -199,6 +199,7 @@ export const DashboardScreen = ({
           <div className="p-6 lg:p-7 flex flex-col gap-5 max-w-[960px] w-full mx-auto">
             {/* Conversation Feed */}
             <div ref={chatContainerRef} className="flex flex-col gap-5 overflow-y-auto h-[440px] pr-2">
+              <div className="mt-auto" />
               {chatMessages.map((msg) => {
                 const isAssistant = msg.sender === 'assistant';
 
@@ -316,7 +317,7 @@ export const DashboardScreen = ({
                   </div>
                 );
               })}
-              <div ref={chatContainerRef} />
+              <div />
             </div>
 
             {/* Bottom Suggestions & Persistent Chat Input */}
