@@ -156,11 +156,10 @@ export const DashboardScreen = ({
         <div className="flex items-center gap-8 px-7 border-b border-[#191B1C]/[0.06] bg-[#FCFDFE]">
           <button
             onClick={() => setActiveTab('overview')}
-            className={`py-4 text-sm font-semibold relative transition cursor-pointer ${
-              activeTab === 'overview'
-                ? 'text-[#191B1C] font-bold'
-                : 'text-[#595F61] hover:text-[#191B1C]'
-            }`}
+            className={`py-4 text-sm font-semibold relative transition cursor-pointer ${activeTab === 'overview'
+              ? 'text-[#191B1C] font-bold'
+              : 'text-[#595F61] hover:text-[#191B1C]'
+              }`}
           >
             Overview & Recommendations
             {activeTab === 'overview' && (
@@ -170,11 +169,10 @@ export const DashboardScreen = ({
 
           <button
             onClick={() => setActiveTab('cart_sync')}
-            className={`py-4 text-sm font-semibold relative transition cursor-pointer ${
-              activeTab === 'cart_sync'
-                ? 'text-[#191B1C] font-bold'
-                : 'text-[#595F61] hover:text-[#191B1C]'
-            }`}
+            className={`py-4 text-sm font-semibold relative transition cursor-pointer ${activeTab === 'cart_sync'
+              ? 'text-[#191B1C] font-bold'
+              : 'text-[#595F61] hover:text-[#191B1C]'
+              }`}
           >
             Cart Sync
             {activeTab === 'cart_sync' && (
@@ -184,11 +182,10 @@ export const DashboardScreen = ({
 
           <button
             onClick={() => setActiveTab('macros')}
-            className={`py-4 text-sm font-semibold relative transition cursor-pointer ${
-              activeTab === 'macros'
-                ? 'text-[#191B1C] font-bold'
-                : 'text-[#595F61] hover:text-[#191B1C]'
-            }`}
+            className={`py-4 text-sm font-semibold relative transition cursor-pointer ${activeTab === 'macros'
+              ? 'text-[#191B1C] font-bold'
+              : 'text-[#595F61] hover:text-[#191B1C]'
+              }`}
           >
             Macro Balancer
             {activeTab === 'macros' && (
@@ -201,16 +198,15 @@ export const DashboardScreen = ({
         {activeTab === 'overview' && (
           <div className="p-6 lg:p-7 flex flex-col gap-5 max-w-[960px] w-full mx-auto">
             {/* Conversation Feed */}
-            <div ref={chatContainerRef} className="flex flex-col gap-5 overflow-y-auto max-h-[460px] pr-2">
+            <div ref={chatContainerRef} className="flex flex-col gap-5 overflow-y-auto h-[440px] pr-2">
               {chatMessages.map((msg) => {
                 const isAssistant = msg.sender === 'assistant';
 
                 return (
                   <div
                     key={msg.id}
-                    className={`flex items-start gap-3 ${
-                      isAssistant ? 'justify-start' : 'justify-end'
-                    }`}
+                    className={`flex items-start gap-3 ${isAssistant ? 'justify-start' : 'justify-end'
+                      }`}
                   >
                     {isAssistant && (
                       <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#63EF46] to-[#46B8EF] flex items-center justify-center font-extrabold text-base text-[#0b2210] shrink-0 shadow-[0_3px_8px_rgba(70,184,239,0.25)]">
@@ -219,9 +215,8 @@ export const DashboardScreen = ({
                     )}
 
                     <div
-                      className={`flex flex-col gap-1.5 ${
-                        isAssistant ? 'max-w-[85%]' : 'max-w-[75%] items-end'
-                      }`}
+                      className={`flex flex-col gap-1.5 ${isAssistant ? 'max-w-[85%]' : 'max-w-[75%] items-end'
+                        }`}
                     >
                       <div className="flex items-center gap-2 px-1">
                         <span className="text-xs font-bold text-[#191B1C]">
@@ -233,11 +228,10 @@ export const DashboardScreen = ({
                       </div>
 
                       <div
-                        className={`rounded-2xl px-4 py-3.5 text-sm leading-relaxed ${
-                          isAssistant
-                            ? 'bg-[#F4F8FA] border border-[#191B1C]/[0.06] text-[#191B1C] rounded-tl-sm'
-                            : 'bg-gradient-to-br from-[#191B1C] to-[#2d3235] text-white shadow-[0_4px_12px_rgba(25,27,28,0.12)] rounded-tr-sm'
-                        }`}
+                        className={`rounded-2xl px-4 py-3.5 text-sm leading-relaxed ${isAssistant
+                          ? 'bg-[#F4F8FA] border border-[#191B1C]/[0.06] text-[#191B1C] rounded-tl-sm'
+                          : 'bg-gradient-to-br from-[#191B1C] to-[#2d3235] text-white shadow-[0_4px_12px_rgba(25,27,28,0.12)] rounded-tr-sm'
+                          }`}
                       >
                         {msg.content}
                       </div>
@@ -290,11 +284,10 @@ export const DashboardScreen = ({
                                 <button
                                   onClick={() => handleAddActionCard(card)}
                                   disabled={isAdded}
-                                  className={`w-full py-1.5 px-3 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition cursor-pointer ${
-                                    isAdded
-                                      ? 'bg-emerald-100 text-emerald-800'
-                                      : 'bg-gradient-to-r from-[#63EF46] to-[#46B8EF] text-[#0b2210] hover:brightness-105 shadow-sm'
-                                  }`}
+                                  className={`w-full py-1.5 px-3 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition cursor-pointer ${isAdded
+                                    ? 'bg-emerald-100 text-emerald-800'
+                                    : 'bg-gradient-to-r from-[#63EF46] to-[#46B8EF] text-[#0b2210] hover:brightness-105 shadow-sm'
+                                    }`}
                                 >
                                   {isAdded ? (
                                     <>
@@ -465,7 +458,7 @@ export const DashboardScreen = ({
       {/* Prominent Full-Width "Go Shopping" Button */}
       <div className="w-full pt-1 pb-4">
         <button
-          onClick={()=>onGoShopping()}
+          onClick={() => onGoShopping()}
           id="go-shopping-btn"
           className="w-full bg-gradient-to-r from-[#63EF46] to-[#46B8EF] text-[#0b2210] font-bold text-base py-3.5 px-6 rounded-full flex items-center justify-center gap-2.5 shadow-[0_4px_14px_rgba(70,184,239,0.35)] hover:shadow-[0_6px_18px_rgba(70,184,239,0.45)] hover:-translate-y-0.5 transition-all cursor-pointer"
         >
