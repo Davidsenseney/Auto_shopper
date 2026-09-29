@@ -255,7 +255,7 @@ export const RecipesScreen = ({
         {/* Recipe Cards Grid (2x2 Layout) */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5" id="recipe-cards-grid">
           {filteredRecipes.map((recipe) => {
-            const hasDetailAction = recipe.id === 'salmon-lemon-asparagus' || recipe.id === 'blueberry-overnight-oats';
+            const hasDetailAction = Array.isArray(recipe.steps) && recipe.steps.length > 0;
 
             return (
               <div
