@@ -1,12 +1,17 @@
 import os
+import requests
+from requests.auth import HTTPBasicAuth
+from django.core.cache import cache
+from django.http import JsonResponse
 from google import genai
 from google.genai import types
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 import json
-from .models import RecentChat
+from .models import RecentChat, KrogerStore, UserPreference
 from pathlib import Path
+from . import kroger 
 
 client = genai.Client(api_key=os.environ.get("Google_API_KEY"))
 #for model in client.models.list():
@@ -158,6 +163,7 @@ def save_chat_endpoint(request):
             )
 
         ctx = RecentChat.objects.create(
+            user=request.user if request.user.is_authenticated else None,
             data=extracted_dict,
             source_messages=raw_messages,
         )
@@ -171,3 +177,107 @@ def save_chat_endpoint(request):
             {"error": "An error occurred while saving the chat."},
             status=status.HTTP_500_INTERNAL_SERVER_ERROR,
         )
+
+@api_view(["GET"])
+def store_search(request):
+    zip_code = request.query_params.get("zip")
+    if not zip_code:
+        return Response({"error": "zip required"}, status=status.HTTP_400_BAD_REQUEST)
+    try:
+        stores = kroger.search_stores(zip_code)
+    except Exception as e:
+        print(f"Kroger store search failed: {e}")
+        return Response({"error": "Kroger lookup failed."}, status=status.HTTP_502_BAD_GATEWAY)
+
+    return Response({"stores": [
+        {
+            "location_id": s["locationId"],
+            "name": s["name"],
+            "chain": s.get("chain", ""),
+            "address": s["address"]["addressLine1"],
+            "city": s["address"]["city"],
+            "state": s["address"]["state"],
+            "zip_code": s["address"]["zipCode"],
+        } for s in stores
+    ]})
+
+
+@api_view(["POST"])
+def save_preferences(request):
+    body = request.data
+
+    store = None
+    if body.get("store"):
+        s = body["store"]
+        store, _ = KrogerStore.objects.update_or_create(
+            location_id=s["location_id"],
+            defaults={k: s.get(k, "") for k in
+                      ("name", "chain", "address", "city", "state", "zip_code")},
+        )
+
+    if request.user.is_authenticated:
+        lookup = {"user": request.user}
+    else:
+        if not request.session.session_key:
+            request.session.create()
+        lookup = {"user": None, "session_key": request.session.session_key}
+
+    prefs, _ = UserPreference.objects.update_or_create(
+        **lookup,
+        defaults={
+            "preferred_store": store,
+            "budget": body.get("budget"),
+            "household_size": body.get("household_size", 1),
+            "dietary_restrictions": body.get("dietary_restrictions", []),
+            "cuisines": body.get("cuisines", []),
+        },
+    )
+    return Response({"ok": True, "id": prefs.id}, status=status.HTTP_201_CREATED)
+
+def get_kroger_token():
+    # Optional: Cache the token for 25 minutes (Kroger tokens last 30 mins)
+    token = cache.get('kroger_access_token')
+    if token:
+        return token
+
+    client_id = os.getenv("KROGER_CLIENT_ID")
+    client_secret = os.getenv("KROGER_CLIENT_SECRET")
+    
+    url = "https://api.kroger.com/v1/connect/oauth2/token"
+    response = requests.post(
+        url,
+        data={"grant_type": "client_credentials", "scope": "product.compact"},
+        auth=HTTPBasicAuth(client_id, client_secret)
+    )
+    
+    if response.status_code == 200:
+        data = response.json()
+        token = data.get("access_token")
+        # Cache it for 1500 seconds (25 minutes)
+        cache.set('kroger_access_token', token, 1500)
+        return token
+    return None
+
+def search_kroger_products(request):
+    # Get search term from frontend query parameters (e.g., /api/search?q=milk)
+    query = request.GET.get('q', 'milk')
+    
+    token = get_kroger_token()
+    if not token:
+        return JsonResponse({"error": "Failed to authenticate with Kroger API"}, status=500)
+    
+    headers = {
+        'Authorization': f'Bearer {token}',
+        'Accept': 'application/json'
+    }
+    params = {
+        'filter.term': query,
+        'filter.limit': 10
+    }
+    
+    response = requests.get('https://api.kroger.com/v1/products', headers=headers, params=params)
+    
+    if response.status_code == 200:
+        return JsonResponse(response.json(), safe=False)
+    else:
+        return JsonResponse({"error": "Failed to fetch products from Kroger"}, status=response.status_code)
