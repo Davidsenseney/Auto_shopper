@@ -2,11 +2,14 @@ import os
 from google import genai
 from google.genai import types
 from rest_framework import status
+from rest_framework import generics
+from rest_framework.permissions import AllowAny
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 import json
-from .models import RecentChat
+from .models import RecentChat, HealthProfile
 from pathlib import Path
+from .serializers import HealthProfileSerializer
 
 client = genai.Client(api_key=os.environ.get("Google_API_KEY"))
 #for model in client.models.list():
@@ -171,3 +174,7 @@ def save_chat_endpoint(request):
             {"error": "An error occurred while saving the chat."},
             status=status.HTTP_500_INTERNAL_SERVER_ERROR,
         )
+class HealthProfileCreateAPIView(generics.CreateAPIView):
+    queryset = HealthProfile.objects.all()
+    serializer_class = HealthProfileSerializer
+    permission_classes = [AllowAny]
