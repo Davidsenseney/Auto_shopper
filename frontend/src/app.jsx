@@ -94,11 +94,11 @@ export function App() {
       ]);
     }
   };
-  const handleGoShopping = async () => {
-    const message = chatMessages.map((m) => ({
-      sender: m.sender === 'user' ? 'user' : 'model',
-      text: m.content,
-    }));
+      const handleGoShopping=async()=>{
+      const message = chatMessages.map((m) => ({
+        sender: m.sender === 'user' ? 'user' : 'model',
+        text: m.content,
+      }));
 
     try {
       const response = await fetch('/api/shopping/extract/', {
@@ -188,13 +188,13 @@ export function App() {
         />
 
         {/* Screen Router Viewport */}
-        <main className="flex-1 p-4 lg:p-8 max-w-[1400px] w-full">
+        <main className="flex-1 p-4 lg:p-8 max-w-[1400px] w-full mx-auto">
           {activeScreen === 'dashboard' && (
             <DashboardScreen
               stats={stats}
               chatMessages={chatMessages}
               onSendMessage={handleSendMessage}
-              onQuickAddCart={() => { }}
+              onQuickAddCart= {()=>{}}
               onGoShopping={handleGoShopping}
               cartItems={cartItems}
             />
