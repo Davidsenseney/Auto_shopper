@@ -1,4 +1,10 @@
 from rest_framework import serializers
+from .models import Recipe, HealthProfile, Allergy
+
+class RecipeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Recipe
+        fields = "__all__"
 from .models import HealthProfile, Allergy
 
 class AllergySerializer(serializers.ModelSerializer):

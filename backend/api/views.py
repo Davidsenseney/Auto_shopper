@@ -1,15 +1,14 @@
 import os
 from google import genai
 from google.genai import types
-from rest_framework import status
-from rest_framework import generics
-from rest_framework.permissions import AllowAny
+from rest_framework import generics,permissions,status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 import json
-from .models import RecentChat, HealthProfile
+from .models import RecentChat, Recipe, HealthProfile
 from pathlib import Path
-from .serializers import HealthProfileSerializer
+from .serializers import RecipeSerializer,HealthProfileSerializer
+from rest_framework.permissions import AllowAny
 
 client = genai.Client(api_key=os.environ.get("Google_API_KEY"))
 #for model in client.models.list():
@@ -178,3 +177,8 @@ class HealthProfileCreateAPIView(generics.CreateAPIView):
     queryset = HealthProfile.objects.all()
     serializer_class = HealthProfileSerializer
     permission_classes = [AllowAny]
+    
+class RecipeListView(generics.ListAPIView):
+    queryset = Recipe.objects.all()
+    serializer_class = RecipeSerializer
+    permission_classes = [permissions.AllowAny]

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, {useEffect, useState } from 'react';
 import { Sidebar } from './components/Sidebar';
 import { TopHeader } from './components/TopHeader';
 import { DashboardScreen } from './pages/DashboardScreen';
@@ -15,7 +15,7 @@ import {
   INITIAL_DIETARY_RESTRICTIONS,
   INITIAL_DIETARY_FRAMEWORKS,
   INITIAL_CART_ITEMS,
-} from './data/initialData';
+ } from './data/initialData';
 
 /**
  * ============================================================================
@@ -42,7 +42,33 @@ export function App() {
   const [restrictions, setRestrictions] = useState(INITIAL_DIETARY_RESTRICTIONS);
   const [frameworks, setFrameworks] = useState(INITIAL_DIETARY_FRAMEWORKS);
   const [cartItems, setCartItems] = useState(INITIAL_CART_ITEMS);
+  useEffect(() => {
+  const loadRecipes = async () => {
+    try {
+      const response = await fetch('/api/recipes/');
+      if (!response.ok) throw new Error('Could not load recipes');
 
+      const rows = await response.json();
+      const recipesFromApi = rows.map((recipe) => ({
+        ...recipe,
+        id: String(recipe.id),
+        imageUrl: recipe.image_url,
+        prepTimeMinutes: recipe.prep_time_minutes,
+        costPerServing: Number(recipe.cost_per_serving),
+        proteinGrams: recipe.protein_grams,
+        carbsGrams: recipe.carbs_grams,
+        fatsGrams: recipe.fats_grams,
+        macroFramework: recipe.macro_framework,
+        inCart: recipe.in_cart,
+      }));
+
+      setRecipes(recipesFromApi);
+    } catch (error) {
+      console.error('Failed to load recipes:', error);
+    }
+  };
+  loadRecipes();
+}, []);
   // Active Recipe for Detail Modal
   const [selectedRecipe, setSelectedRecipe] = useState(null);
 
