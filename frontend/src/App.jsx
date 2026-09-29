@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, {useEffect, useState } from 'react';
 import { Sidebar } from './components/Sidebar';
 import { TopHeader } from './components/TopHeader';
 import { DashboardScreen } from './pages/DashboardScreen';
@@ -15,7 +15,7 @@ import {
   INITIAL_DIETARY_RESTRICTIONS,
   INITIAL_DIETARY_FRAMEWORKS,
   INITIAL_CART_ITEMS,
-} from './data/initialData';
+ } from './data/initialData';
 
 /**
  * ============================================================================
@@ -42,78 +42,104 @@ export function App() {
   const [restrictions, setRestrictions] = useState(INITIAL_DIETARY_RESTRICTIONS);
   const [frameworks, setFrameworks] = useState(INITIAL_DIETARY_FRAMEWORKS);
   const [cartItems, setCartItems] = useState(INITIAL_CART_ITEMS);
+  useEffect(() => {
+  const loadRecipes = async () => {
+    try {
+      const response = await fetch('/api/recipes/');
+      if (!response.ok) throw new Error('Could not load recipes');
 
+      const rows = await response.json();
+      const recipesFromApi = rows.map((recipe) => ({
+        ...recipe,
+        id: String(recipe.id),
+        imageUrl: recipe.image_url,
+        prepTimeMinutes: recipe.prep_time_minutes,
+        costPerServing: Number(recipe.cost_per_serving),
+        proteinGrams: recipe.protein_grams,
+        carbsGrams: recipe.carbs_grams,
+        fatsGrams: recipe.fats_grams,
+        macroFramework: recipe.macro_framework,
+        inCart: recipe.in_cart,
+      }));
+
+      setRecipes(recipesFromApi);
+    } catch (error) {
+      console.error('Failed to load recipes:', error);
+    }
+  };
+  loadRecipes();
+}, []);
   // Active Recipe for Detail Modal
   const [selectedRecipe, setSelectedRecipe] = useState(null);
 
-    // Simulated Smart Shopper AI Response
-    const handleSendMessage = async (content) => {
-      const userMessage = {
-        id: `msg-${Date.now()}`,
-        sender: 'user',
-        senderName: 'You',
-        timestamp: 'Just now',
-        content,
-      };
-      const updatedMessages = [...chatMessages, userMessage];
-      setChatMessages(updatedMessages);
-      const payload = {
-        messages: updatedMessages.map((m) => ({
-          sender: m.sender === 'user' ? 'user' : 'bot',
-          text: m.content,
-        })),
-      };
-      try {
-        const response = await fetch('/api/chat/', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload),
-        });
-        if (!response.ok) throw new Error('Chat request failed');
-        const data = await response.json();
-        setChatMessages((prev) => [
-          ...prev,
-          {
-            id: `msg-bot-${Date.now()}`,
-            sender: 'assistant',
-            senderName: 'Bri Assistant',
-            timestamp: 'Just now',
-            content: data.reply,
-          },
-        ]);
-      } catch (err) {
-        setChatMessages((prev) => [
-          ...prev,
-          {
-            id: `msg-err-${Date.now()}`,
-            sender: 'assistant',
-            senderName: 'Bri Assistant',
-            timestamp: 'Just now',
-            content: 'Sorry, there was an error processing your request.',
-          },
-        ]);
-      }
+  // Simulated Smart Shopper AI Response
+  const handleSendMessage = async (content) => {
+    const userMessage = {
+      id: `msg-${Date.now()}`,
+      sender: 'user',
+      senderName: 'You',
+      timestamp: 'Just now',
+      content,
     };
-    const handleGoShopping=async()=>{
+    const updatedMessages = [...chatMessages, userMessage];
+    setChatMessages(updatedMessages);
+    const payload = {
+      messages: updatedMessages.map((m) => ({
+        sender: m.sender === 'user' ? 'user' : 'bot',
+        text: m.content,
+      })),
+    };
+    try {
+      const response = await fetch('/api/chat/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      if (!response.ok) throw new Error('Chat request failed');
+      const data = await response.json();
+      setChatMessages((prev) => [
+        ...prev,
+        {
+          id: `msg-bot-${Date.now()}`,
+          sender: 'assistant',
+          senderName: 'Bri Assistant',
+          timestamp: 'Just now',
+          content: data.reply,
+        },
+      ]);
+    } catch (err) {
+      setChatMessages((prev) => [
+        ...prev,
+        {
+          id: `msg-err-${Date.now()}`,
+          sender: 'assistant',
+          senderName: 'Bri Assistant',
+          timestamp: 'Just now',
+          content: 'Sorry, there was an error processing your request.',
+        },
+      ]);
+    }
+  };
+      const handleGoShopping=async()=>{
       const message = chatMessages.map((m) => ({
         sender: m.sender === 'user' ? 'user' : 'model',
         text: m.content,
       }));
 
-      try {
-        const response = await fetch('/api/shopping/extract/', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ messages: message }),
-        });
-        if (!response.ok) throw new Error('Shopping request failed');
-        const data = await response.json();
-        console.log("Saved RecentChat", data.id, data.id.source_messages);
-      } catch (err) {
-        console.error(err);
-        alert('Could not save Chat preferences for shopping. Please try again.');
-      }
-    };
+    try {
+      const response = await fetch('/api/shopping/extract/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ messages: message }),
+      });
+      if (!response.ok) throw new Error('Shopping request failed');
+      const data = await response.json();
+      console.log("Saved RecentChat", data.id, data.id.source_messages);
+    } catch (err) {
+      console.error(err);
+      alert('Could not save Chat preferences for shopping. Please try again.');
+    }
+  };
   // Add Recipe Ingredients to Cart
   const handleAddRecipeToCart = (recipe) => {
     const missingIngredients = recipe.ingredients.filter(
@@ -194,12 +220,12 @@ export function App() {
               stats={stats}
               chatMessages={chatMessages}
               onSendMessage={handleSendMessage}
-              onQuickAddCart={()=>{}}
+              onQuickAddCart= {()=>{}}
               onGoShopping={handleGoShopping}
               cartItems={cartItems}
             />
           )
-} 
+          }
           {activeScreen === 'recipes' && (
             <RecipesScreen
               recipes={recipes}
