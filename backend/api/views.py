@@ -1,12 +1,18 @@
 import os
 from google import genai
 from google.genai import types
-from rest_framework import status
+from rest_framework import generics,permissions,status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 import json
-from .models import RecentChat
+from .models import RecentChat, Recipe
 from pathlib import Path
+from .serializers import RecipeSerializer
+
+class RecipeListView(generics.ListAPIView):
+    queryset = Recipe.objects.all()
+    serializer_class = RecipeSerializer
+    permission_classes = [permissions.AllowAny]
 
 client = genai.Client(api_key=os.environ.get("Google_API_KEY"))
 #for model in client.models.list():

@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import RecentChat
+from .models import RecentChat, Recipe
 
 # Register your models here.
 @admin.register(RecentChat)
@@ -8,3 +8,5 @@ class RecentChatAdmin(admin.ModelAdmin):
     list_filter = ("created_at",)
     search_fields = ("id",)
     readonly_fields = ("created_at", "updated_at")
+
+admin.site.register(Recipe)
