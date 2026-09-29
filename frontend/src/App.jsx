@@ -120,11 +120,11 @@ export function App() {
       ]);
     }
   };
-      const handleGoShopping=async()=>{
-      const message = chatMessages.map((m) => ({
-        sender: m.sender === 'user' ? 'user' : 'model',
-        text: m.content,
-      }));
+  const handleGoShopping = async () => {
+    const message = chatMessages.map((m) => ({
+      sender: m.sender === 'user' ? 'user' : 'model',
+      text: m.content,
+    }));
 
     try {
       const response = await fetch('/api/shopping/extract/', {
