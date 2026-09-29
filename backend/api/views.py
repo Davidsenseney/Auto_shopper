@@ -5,13 +5,15 @@ from django.core.cache import cache
 from django.http import JsonResponse
 from google import genai
 from google.genai import types
-from rest_framework import status
+from rest_framework import generics,permissions,status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 import json
-from .models import RecentChat, KrogerStore, UserPreference
+from .models import RecentChat, KrogerStore, UserPreference, Recipe, HealthProfile
 from pathlib import Path
 from . import kroger 
+from .serializers import RecipeSerializer,HealthProfileSerializer
+from rest_framework.permissions import AllowAny
 
 client = genai.Client(api_key=os.environ.get("Google_API_KEY"))
 #for model in client.models.list():
@@ -281,3 +283,12 @@ def search_kroger_products(request):
         return JsonResponse(response.json(), safe=False)
     else:
         return JsonResponse({"error": "Failed to fetch products from Kroger"}, status=response.status_code)
+class HealthProfileCreateAPIView(generics.CreateAPIView):
+    queryset = HealthProfile.objects.all()
+    serializer_class = HealthProfileSerializer
+    permission_classes = [AllowAny]
+    
+class RecipeListView(generics.ListAPIView):
+    queryset = Recipe.objects.all()
+    serializer_class = RecipeSerializer
+    permission_classes = [permissions.AllowAny]

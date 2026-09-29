@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import RecentChat, KrogerAccount, RecipeResult
+from .models import RecentChat, Recipe, KrogerAccount, RecipeResult, HealthProfile, Allergy,
 
 # Register your models here.
 @admin.register(RecentChat)
@@ -20,3 +20,6 @@ class RecipeResultAdmin(admin.ModelAdmin):
     list_display = ("id", "user", "created_at")
     list_filter = ("created_at",)
     search_fields = ("user__username",)
+admin.site.register(Recipe)
+admin.site.register(HealthProfile)
+admin.site.register(Allergy)
