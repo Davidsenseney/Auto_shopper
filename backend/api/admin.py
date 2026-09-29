@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import RecentChat, Recipe, KrogerAccount, RecipeResult, HealthProfile, Allergy,
+from .models import RecentChat, Recipe, KrogerAccount, RecipeResult, HealthProfile, Allergy
 
 # Register your models here.
 @admin.register(RecentChat)

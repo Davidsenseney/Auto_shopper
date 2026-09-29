@@ -8,7 +8,6 @@ from .views import (
     HealthProfileCreateAPIView,
     RecipeListView
 )
-from .views import chat_endpoint, save_chat_endpoint, 
 
 urlpatterns = [
     path('chat/', chat_endpoint, name='chat_endpoint'),
@@ -16,7 +15,6 @@ urlpatterns = [
     path('kroger/stores/', store_search, name='store_search'),
     path('preferences/', save_preferences, name='save_preferences'),
     path('kroger-search/', search_kroger_products, name='kroger-search'),
-]
     path("recipes/", RecipeListView.as_view(), name="recipe-list"),
     path('health-profile/', HealthProfileCreateAPIView.as_view(), name='health-profile-create'),
 ]

@@ -98,7 +98,9 @@ class RecipeResult(models.Model):
     recipes = models.JSONField(default=list)
     ingredients = models.JSONField(default=list)  # [{"name": "chicken breast", "quantity": 2, "unit": "lb"}]
     created_at = models.DateTimeField(auto_now_add=True)
-        name= self.user.username if self.user else "Anonymous"
+
+    def __str__(self):
+        name = self.user.username if self.user else "Anonymous"
         return f"{name} - {self.created_at}"
 
 class Recipe(models.Model):
