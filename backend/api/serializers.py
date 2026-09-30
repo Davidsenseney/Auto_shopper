@@ -19,12 +19,11 @@ class HealthProfileSerializer(serializers.ModelSerializer):
         model = HealthProfile
         fields = ['id', 'dietary_restrictions', 'desired_diets','allergies']
 
-        def create(self, validated_data):
-            allergies_data = validated_data.pop('allergies', [])
-
-            profile = HealthProfile.objects.create(**validated_data)
-
-            for allergy_data in allergies_data:
-                Allergy.objects.create(profile=profile, **allergy_data)
-
-            return profile
+    def create(self, validated_data):
+        allergies_data = validated_data.pop('allergies', [])
+        profile = HealthProfile.objects.create(**validated_data)
+         
+        for allergy_data in allergies_data:
+            Allergy.objects.create(profile=profile, **allergy_data)
+        
+        return profile
