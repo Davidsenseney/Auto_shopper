@@ -106,7 +106,7 @@ export const HealthScreen = ({
       }))
     };
     try {
-      const response = await fetch('api/health-profile/', {
+      const response = await fetch('/api/health-profile/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),

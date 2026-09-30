@@ -42,6 +42,52 @@ export function App() {
   const [restrictions, setRestrictions] = useState(INITIAL_DIETARY_RESTRICTIONS);
   const [frameworks, setFrameworks] = useState(INITIAL_DIETARY_FRAMEWORKS);
   const [cartItems, setCartItems] = useState(INITIAL_CART_ITEMS);
+
+  useEffect(() => {
+  const loadHeallthProfile = async () => {
+    try {
+      const response = await fetch('/api/health-profile/');
+      if (!response.ok) throw new Error('Could not load health profile');
+
+      const rows = await response.json();
+      if (!Array.isArray(rows) || rows.length === 0) return;
+
+      const profile = rows[rows.length - 1];
+
+      setAllergies(
+        (profile.allergies || []).map((allergey, index) => ({
+          id: `allergy-${index}-${allergy.allergen_name}`,
+          name: allergy.allergen_name,
+          severity: allergy.severity,
+          description: 'Saved from your health profile',
+          badgeStyle:
+            allergy.severity === 'SEVERE'
+              ? 'critical'
+              : allergy.severity === 'MODERATE'
+                ? 'high'
+                : 'preference',
+        }))
+      );
+      setRestrictions(
+        (profile.dietary_restrictions || []).map((title, index) => ({
+          id: `restriction-${index}`,
+          title,
+          description: 'Saved from your health profile.',
+          enforcement: 'Strict Cart Auto-Block',
+        }))
+      );
+      setFrameworks((prev) =>
+        prev.map((fw) => ({
+          ...fw,
+          isActive: (profile.desired_diets || []).includes(fw.name),
+        }))
+      );
+    } catch (error) {
+      console.error('Failed to load health profile:', error);
+    }
+  };
+  loadHeallthProfile();
+}, []);
   useEffect(() => {
     const loadRecipes = async () => {
       try {
@@ -266,50 +312,4 @@ export function App() {
     </div>
   );
 }
-
-useEffect(() => {
-  const loadHeallthProfile = async () => {
-    try {
-      const response = await fetch('/api/health-profile/');
-      if (!response.ok) throw new Error('Could not load health profile');
-
-      const rows = await response.json();
-      if (!Array.isArray(rows) || rows.length === 0) return;
-
-      const profile = rows[rows.length - 1];
-
-      setAllergies(
-        (profile.allergies || []).map((allergey, index) => ({
-          id: `allergy-${index}-${allergy.allergen_name}`,
-          name: allergy.allergen_name,
-          severity: allergy.severity,
-          description: 'Saved from your health profile',
-          badgeStyle:
-            allergy.severity === 'SEVERE'
-              ? 'critical'
-              : allergy.severity === 'MODERATE'
-                ? 'high'
-                : 'preference',
-        }))
-      );
-      setRestrictions(
-        (profile.dietary_restrictions || []).map((title, index) => ({
-          id: `restriction-${index}`,
-          title,
-          description: 'Saved from your health profile.',
-          enforcement: 'Strict Cart Auto-Block',
-        }))
-      );
-      setFrameworks((prev) =>
-        prev.map((fw) => ({
-          ...fw,
-          isActive: (profile.desired_diets || []).includes(fw.name),
-        }))
-      );
-    } catch (error) {
-      console.error('Failed to load health profile:', error);
-    }
-  };
-  loadHeallthProfile();
-}, []);
 export default App;
