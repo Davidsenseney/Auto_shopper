@@ -1,4 +1,4 @@
-import React, {useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Sidebar } from './components/Sidebar';
 import { TopHeader } from './components/TopHeader';
 import { DashboardScreen } from './pages/DashboardScreen';
@@ -15,7 +15,7 @@ import {
   INITIAL_DIETARY_RESTRICTIONS,
   INITIAL_DIETARY_FRAMEWORKS,
   INITIAL_CART_ITEMS,
- } from './data/initialData';
+} from './data/initialData';
 
 /**
  * ============================================================================
@@ -43,32 +43,32 @@ export function App() {
   const [frameworks, setFrameworks] = useState(INITIAL_DIETARY_FRAMEWORKS);
   const [cartItems, setCartItems] = useState(INITIAL_CART_ITEMS);
   useEffect(() => {
-  const loadRecipes = async () => {
-    try {
-      const response = await fetch('/api/recipes/');
-      if (!response.ok) throw new Error('Could not load recipes');
+    const loadRecipes = async () => {
+      try {
+        const response = await fetch('/api/recipes/');
+        if (!response.ok) throw new Error('Could not load recipes');
 
-      const rows = await response.json();
-      const recipesFromApi = rows.map((recipe) => ({
-        ...recipe,
-        id: String(recipe.id),
-        imageUrl: recipe.image_url,
-        prepTimeMinutes: recipe.prep_time_minutes,
-        costPerServing: Number(recipe.cost_per_serving),
-        proteinGrams: recipe.protein_grams,
-        carbsGrams: recipe.carbs_grams,
-        fatsGrams: recipe.fats_grams,
-        macroFramework: recipe.macro_framework,
-        inCart: recipe.in_cart,
-      }));
+        const rows = await response.json();
+        const recipesFromApi = rows.map((recipe) => ({
+          ...recipe,
+          id: String(recipe.id),
+          imageUrl: recipe.image_url,
+          prepTimeMinutes: recipe.prep_time_minutes,
+          costPerServing: Number(recipe.cost_per_serving),
+          proteinGrams: recipe.protein_grams,
+          carbsGrams: recipe.carbs_grams,
+          fatsGrams: recipe.fats_grams,
+          macroFramework: recipe.macro_framework,
+          inCart: recipe.in_cart,
+        }));
 
-      setRecipes(recipesFromApi);
-    } catch (error) {
-      console.error('Failed to load recipes:', error);
-    }
-  };
-  loadRecipes();
-}, []);
+        setRecipes(recipesFromApi);
+      } catch (error) {
+        console.error('Failed to load recipes:', error);
+      }
+    };
+    loadRecipes();
+  }, []);
   // Active Recipe for Detail Modal
   const [selectedRecipe, setSelectedRecipe] = useState(null);
 
@@ -220,7 +220,7 @@ export function App() {
               stats={stats}
               chatMessages={chatMessages}
               onSendMessage={handleSendMessage}
-              onQuickAddCart= {()=>{}}
+              onQuickAddCart={() => { }}
               onGoShopping={handleGoShopping}
               cartItems={cartItems}
             />
@@ -266,4 +266,50 @@ export function App() {
     </div>
   );
 }
+
+useEffect(() => {
+  const loadHeallthProfile = async () => {
+    try {
+      const response = await fetch('/api/health-profile/');
+      if (!response.ok) throw new Error('Could not load health profile');
+
+      const rows = await response.json();
+      if (!Array.isArray(rows) || rows.length === 0) return;
+
+      const profile = rows[rows.length - 1];
+
+      setAllergies(
+        (profile.allergies || []).map((allergey, index) => ({
+          id: `allergy-${index}-${allergy.allergen_name}`,
+          name: allergy.allergen_name,
+          severity: allergy.severity,
+          description: 'Saved from your health profile',
+          badgeStyle:
+            allergy.severity === 'SEVERE'
+              ? 'critical'
+              : allergy.severity === 'MODERATE'
+                ? 'high'
+                : 'preference',
+        }))
+      );
+      setRestrictions(
+        (profile.dietary_restrictions || []).map((title, index) => ({
+          id: `restriction-${index}`,
+          title,
+          description: 'Saved from your health profile.',
+          enforcement: 'Strict Cart Auto-Block',
+        }))
+      );
+      setFrameworks((prev) =>
+        prev.map((fw) => ({
+          ...fw,
+          isActive: (profile.desired_diets || []).includes(fw.name),
+        }))
+      );
+    } catch (error) {
+      console.error('Failed to load health profile:', error);
+    }
+  };
+  loadHeallthProfile();
+}, []);
 export default App;

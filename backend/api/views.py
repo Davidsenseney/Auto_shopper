@@ -283,7 +283,7 @@ def search_kroger_products(request):
         return JsonResponse(response.json(), safe=False)
     else:
         return JsonResponse({"error": "Failed to fetch products from Kroger"}, status=response.status_code)
-class HealthProfileCreateAPIView(generics.CreateAPIView):
+class HealthProfileCreateAPIView(generics.ListCreateAPIView):
     queryset = HealthProfile.objects.all()
     serializer_class = HealthProfileSerializer
     permission_classes = [AllowAny]

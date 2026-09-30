@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   ShieldAlert,
   ShieldCheck,
@@ -43,6 +43,16 @@ import {
  * ============================================================================
  */
 
+const toBackendSeverity = (severity) => {
+  if (severity === 'CRITICAL' || severity === 'HIGH' || severity === 'SEVERE') {
+    return 'SEVERE';
+  }
+  if (severity === 'PREFERENCE' || severity === 'MILD') {
+    return 'MILD';
+  }
+  return 'MODERATE';
+};
+
 export const HealthScreen = ({
   allergies: initialAllergies,
   restrictions: initialRestrictions,
@@ -56,6 +66,12 @@ export const HealthScreen = ({
   const [newAllergyName, setNewAllergyName] = useState('');
   const [newSeverity, setNewSeverity] = useState('HIGH');
 
+  useEffect(() => {
+    setAllergies(initialAllergies);
+    setRestrictions(initialRestrictions);
+    setFrameworks(initialFrameworks);
+  }, [initialAllergies, initialRestrictions, initialFrameworks]);
+
   const activeFramework = frameworks.find((f) => f.isActive) || frameworks[0];
 
   const handleSelectFramework = (id) => {
@@ -67,7 +83,7 @@ export const HealthScreen = ({
     );
   };
 
-  const handleCreateAllergy = (e) => {
+  const handleCreateAllergy = async (e) => {
     e.preventDefault();
     if (!newAllergyName.trim()) return;
 
@@ -79,9 +95,32 @@ export const HealthScreen = ({
       badgeStyle: newSeverity === 'CRITICAL' ? 'critical' : newSeverity === 'HIGH' ? 'high' : 'preference',
     };
 
-    setAllergies((prev) => [...prev, newItem]);
-    setNewAllergyName('');
-    setShowAddModal(false);
+    const nextAllergies = [...allergies, newItem];
+
+    const payload = {
+      dietary_restrictions: restrictions.map((r) => r.title),
+      desired_diets: frameworks.filter((f) => f.isActive).map((f) => f.name),
+      allergies: nextAllergies.map((a) => ({
+        allergen_name: a.name,
+        severity: toBackendSeverity(a.severity),
+      }))
+    };
+    try {
+      const response = await fetch('api/health-profile/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      if (!response.ok) {
+        throw new Error(await response.text());
+      }
+      setAllergies(nextAllergies);
+      setNewAllergyName('');
+      setShowAddModal(false);
+    } catch (err) {
+      console.error('Failed to save health profile', err)
+      alert('Could not save allergy to the backend.');
+    }
   };
 
   return (
@@ -296,9 +335,8 @@ export const HealthScreen = ({
               >
                 <div className="flex items-center gap-3">
                   <div
-                    className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${
-                      isBlock ? 'bg-rose-50 text-rose-600' : 'bg-emerald-50 text-emerald-600'
-                    }`}
+                    className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${isBlock ? 'bg-rose-50 text-rose-600' : 'bg-emerald-50 text-emerald-600'
+                      }`}
                   >
                     <ShieldCheck className="w-4 h-4" />
                   </div>
@@ -309,11 +347,10 @@ export const HealthScreen = ({
                 </div>
 
                 <span
-                  className={`text-[11px] font-bold px-3 py-1 rounded-full border shrink-0 ${
-                    isBlock
+                  className={`text-[11px] font-bold px-3 py-1 rounded-full border shrink-0 ${isBlock
                       ? 'bg-rose-50 text-rose-600 border-rose-100'
                       : 'bg-sky-50 text-sky-600 border-sky-100'
-                  }`}
+                    }`}
                 >
                   {rule.enforcement}
                 </span>
@@ -382,20 +419,18 @@ export const HealthScreen = ({
               <div
                 key={fw.id}
                 onClick={() => handleSelectFramework(fw.id)}
-                className={`p-4 rounded-2xl border transition cursor-pointer relative ${
-                  isActive
+                className={`p-4 rounded-2xl border transition cursor-pointer relative ${isActive
                     ? 'border-2 border-emerald-500 bg-[#F2FDF5] shadow-sm'
                     : 'border-slate-200 bg-white hover:border-slate-300'
-                }`}
+                  }`}
               >
                 <div className="flex items-start justify-between mb-1.5">
                   <div className="flex items-center gap-2">
                     <div
-                      className={`w-7 h-7 rounded-lg flex items-center justify-center ${
-                        isActive
+                      className={`w-7 h-7 rounded-lg flex items-center justify-center ${isActive
                           ? 'bg-emerald-100 text-emerald-700'
                           : 'bg-slate-100 text-slate-600'
-                      }`}
+                        }`}
                     >
                       <Dna className="w-4 h-4" />
                     </div>
@@ -417,9 +452,8 @@ export const HealthScreen = ({
                 </div>
 
                 <p
-                  className={`text-[11px] font-medium mb-3 ${
-                    isActive ? 'text-slate-600' : 'text-slate-500'
-                  }`}
+                  className={`text-[11px] font-medium mb-3 ${isActive ? 'text-slate-600' : 'text-slate-500'
+                    }`}
                 >
                   {fw.description}
                 </p>
@@ -428,11 +462,10 @@ export const HealthScreen = ({
                   {fw.tags.map((tag, idx) => (
                     <span
                       key={idx}
-                      className={`text-[10px] font-semibold px-2 py-0.5 rounded-md ${
-                        isActive
+                      className={`text-[10px] font-semibold px-2 py-0.5 rounded-md ${isActive
                           ? 'bg-white border border-emerald-200 text-emerald-800'
                           : 'bg-slate-100 text-slate-600'
-                      }`}
+                        }`}
                     >
                       {tag}
                     </span>

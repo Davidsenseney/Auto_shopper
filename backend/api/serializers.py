@@ -17,14 +17,12 @@ class HealthProfileSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = HealthProfile
-        fields = ['id', 'dietary_restrictions', 'desired_diets','allergies']
+        fields = ['id', 'dietary_restrictions', 'desired_diets','allergies[].allergen_name', 'allergies[].severity']
 
-        def create(self, validated_data):
-            allergies_data = validated_data.pop('allergies', [])
-
-            profile = HealthProfile.objects.create(**validated_data)
-
-            for allergy_data in allergies_data:
-                Allergy.objects.create(profile=profile, **allergy_data)
-
+     def create(self, validated_data):
+         allergies_data = validated_data.pop('allergies', [])
+         profile = HealthProfile.objects.create(**validated_data)
+         for allergy_data in allergies_data:
+            Allergy.objects.create(profile=profile, **allergy_data)
+            
             return profile
