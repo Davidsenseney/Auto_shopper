@@ -6,7 +6,13 @@ from .views import (
     save_preferences,
     search_kroger_products,
     HealthProfileCreateAPIView,
-    RecipeListView
+    RecipeListView,
+    RegisterView,
+    VerifyEmailView
+)
+from rest_framework_simplejwt.views import (
+    TokenObtainPairView,
+    TokenRefreshView,
 )
 
 urlpatterns = [
@@ -17,4 +23,8 @@ urlpatterns = [
     path('kroger-search/', search_kroger_products, name='kroger-search'),
     path("recipes/", RecipeListView.as_view(), name="recipe-list"),
     path('health-profile/', HealthProfileCreateAPIView.as_view(), name='health-profile-create'),
+    path('register/',RegisterView.as_view(),name='register'),
+    path('verify-email/',VerifyEmailView.as_view(),name='verify-email'),
+    path('login/',TokenObtainPairView.as_view(),name='login'),
+    path('token/refresh/',TokenRefreshView.as_view(),name='token-refresh'),
 ]

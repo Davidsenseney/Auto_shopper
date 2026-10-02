@@ -1,5 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
+import AuthContext from '../context/AuthContext';
 import {
+  User,
   Mail,
   ArrowRight,
   ShieldCheck,
@@ -7,125 +9,95 @@ import {
   Sparkles,
   Lock,
   Store,
-  HeartPulse,
   TrendingDown,
-  ChevronRight,
   AlertCircle,
   Eye,
   EyeOff,
-  RefreshCw,
-  ExternalLink,
-  Zap,
+  RefreshCw
 } from 'lucide-react';
 
 /**
  * LandingSignInScreen Component
  * 
  * Professional, high-converting landing & sign-in page for Bri (AI Auto-Shopper).
- * Adheres strictly to the Bri design system:
- * - Colors: #191B1C (primary), #595F61 (muted), #63EF46 (accent green), #46B8EF (accent blue), #F8FAF9 (surface)
- * - Typography: Plus Jakarta Sans / system-ui
- * - Professional authentication flow focused on email with instant validation,
- *   magic code / password support, one-click demo logins, and Kroger integration highlights.
+ * Features standard Username & Password authentication with Email for registration.
  */
 export const LandingSignInScreen = ({
   onSignInSuccess,
   onExploreDemo,
-  initialEmail = '',
 }) => {
-  const [email, setEmail] = useState(initialEmail);
+  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [authMode, setAuthMode] = useState('magic_link'); // 'magic_link' | 'password'
+  
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
-  const [step, setStep] = useState('email'); // 'email' | 'verification'
-  const [verificationCode, setVerificationCode] = useState(['', '', '', '', '', '']);
   const [isNewAccount, setIsNewAccount] = useState(false);
+  
+  const { loginUser, registerUser } = useContext(AuthContext);
 
   // Email format validation
   const isValidEmail = (val) => {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val);
   };
 
-  // Handle email submission
-  const handleEmailSubmit = (e) => {
+  // Handle form submission
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setErrorMsg('');
 
-    if (!email.trim()) {
-      setErrorMsg('Please enter your email address to continue.');
+    if (!username.trim()) {
+      setErrorMsg('Please enter a username.');
       return;
     }
 
-    if (!isValidEmail(email.trim())) {
+    if (isNewAccount && !isValidEmail(email.trim())) {
       setErrorMsg('Please enter a valid email address (e.g., name@example.com).');
       return;
     }
 
-    setIsSubmitting(true);
+    if (password.length < 6) {
+      setErrorMsg('Password must be at least 6 characters.');
+      return;
+    }
 
-    // Simulate authentication dispatch / magic link generation
-    setTimeout(() => {
+    setIsSubmitting(true);
+    
+    if (isNewAccount) {
+      // --- REGISTRATION ---
+      const result = await registerUser(username.trim(), email.trim(), password);
       setIsSubmitting(false);
-      if (authMode === 'magic_link') {
-        setStep('verification');
+
+      if (result.success) {
+        alert("Account created! Please check your Docker console for the verification email link.");
+        setIsNewAccount(false); // Switch to login view
+        setPassword('');
       } else {
-        // Direct password sign in simulation
-        if (password.length < 6) {
-          setErrorMsg('Password must be at least 6 characters.');
-          return;
-        }
-        completeSignIn(email.trim());
+        setErrorMsg(result.message);
       }
-    }, 700);
+    } else {
+      // --- LOGIN ---
+      const result = await loginUser(username.trim(), password);
+      setIsSubmitting(false);
+
+      if (result.success) {
+        completeSignIn(username.trim());
+      } else {
+        setErrorMsg(result.message);
+      }
+    }
   };
 
   // Complete sign in
-  const completeSignIn = (userEmail) => {
+  const completeSignIn = (loggedInUser) => {
     if (onSignInSuccess) {
       onSignInSuccess({
-        email: userEmail,
-        name: userEmail.split('@')[0].replace(/[._]/g, ' '),
+        username: loggedInUser,
+        name: loggedInUser,
         isAuthenticated: true,
       });
     }
-  };
-
-  // Quick Demo fill
-  const handleQuickDemo = (demoEmail) => {
-    setEmail(demoEmail);
-    setErrorMsg('');
-    completeSignIn(demoEmail);
-  };
-
-  // Handle 6-digit code change
-  const handleCodeChange = (index, value) => {
-    if (value.length > 1) {
-      value = value.slice(-1);
-    }
-    const newCode = [...verificationCode];
-    newCode[index] = value;
-    setVerificationCode(newCode);
-
-    // Auto-advance to next input
-    if (value && index < 5) {
-      const nextInput = document.getElementById(`digit-input-${index + 1}`);
-      if (nextInput) nextInput.focus();
-    }
-
-    // Auto-submit if all 6 digits are entered
-    if (newCode.every((d) => d !== '') && index === 5) {
-      handleVerifyCode(newCode.join(''));
-    }
-  };
-
-  const handleVerifyCode = (code) => {
-    setIsSubmitting(true);
-    setTimeout(() => {
-      setIsSubmitting(false);
-      completeSignIn(email.trim());
-    }, 600);
   };
 
   return (
@@ -191,10 +163,10 @@ export const LandingSignInScreen = ({
       {/* Main Landing & Sign-In Viewport */}
       <main className="relative z-10 flex-1 max-w-7xl w-full mx-auto px-6 lg:px-12 py-8 lg:py-16 flex items-center">
         <div className="w-full grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center">
-          
+
           {/* Left Column: Brand Story, Value Proposition & Live Safeguard Card */}
           <div className="lg:col-span-7 flex flex-col gap-8">
-            
+
             {/* Tagline Pill */}
             <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white border border-[#191B1C]/[0.08] shadow-xs w-fit">
               <span className="w-2 h-2 rounded-full bg-[#63EF46] animate-pulse" />
@@ -293,19 +265,15 @@ export const LandingSignInScreen = ({
               {/* Card Header */}
               <div className="flex flex-col gap-1.5 text-center mb-6">
                 <div className="mx-auto w-12 h-12 rounded-2xl bg-gradient-to-br from-[#63EF46]/20 to-[#46B8EF]/20 border border-[#63EF46]/30 flex items-center justify-center mb-2 shadow-xs">
-                  <Mail className="w-6 h-6 text-[#191B1C]" />
+                  <Lock className="w-6 h-6 text-[#191B1C]" />
                 </div>
                 <h2 className="text-2xl font-extrabold text-[#191B1C] tracking-tight">
-                  {step === 'email'
-                    ? isNewAccount
-                      ? 'Create your Bri account'
-                      : 'Sign in to Bri'
-                    : 'Check your inbox'}
+                  {isNewAccount ? 'Create an account' : 'Sign in to Bri'}
                 </h2>
                 <p className="text-xs sm:text-sm text-[#595F61]">
-                  {step === 'email'
-                    ? 'Enter your email below to access your automated meal planning and Kroger cart.'
-                    : `We sent a 6-digit confirmation code to ${email}`}
+                  {isNewAccount 
+                    ? 'Enter your details below to get started.' 
+                    : 'Welcome back! Please enter your details.'}
                 </p>
               </div>
 
@@ -320,17 +288,44 @@ export const LandingSignInScreen = ({
                 </div>
               )}
 
-              {/* STEP 1: Email Input Form */}
-              {step === 'email' && (
-                <form onSubmit={handleEmailSubmit} className="flex flex-col gap-4">
-                  {/* Email Field */}
+              {/* Form Input */}
+              <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+                
+                {/* Username Field */}
+                <div className="flex flex-col gap-1.5">
+                  <label
+                    htmlFor="username-input"
+                    className="text-xs font-bold text-[#191B1C]"
+                  >
+                    Username
+                  </label>
+                  <div className="relative flex items-center">
+                    <User className="w-4 h-4 text-[#848D90] absolute left-3.5 pointer-events-none" />
+                    <input
+                      id="username-input"
+                      type="text"
+                      value={username}
+                      onChange={(e) => {
+                        setUsername(e.target.value);
+                        if (errorMsg) setErrorMsg('');
+                      }}
+                      placeholder="Enter your username"
+                      autoComplete="username"
+                      autoFocus
+                      required
+                      className="w-full bg-[#FFFFFF] border border-[#191B1C]/[0.12] rounded-xl pl-10 pr-4 py-3 text-sm text-[#191B1C] placeholder-[#848D90] focus:outline-none focus:ring-2 focus:ring-[#46B8EF]/40 focus:border-[#46B8EF] shadow-xs transition"
+                    />
+                  </div>
+                </div>
+
+                {/* Email Field (Only on Registration) */}
+                {isNewAccount && (
                   <div className="flex flex-col gap-1.5">
                     <label
                       htmlFor="user-email-input"
                       className="text-xs font-bold text-[#191B1C] flex items-center justify-between"
                     >
                       <span>Email address</span>
-                      <span className="text-[11px] font-normal text-[#848D90]">Required</span>
                     </label>
                     <div className="relative flex items-center">
                       <Mail className="w-4 h-4 text-[#848D90] absolute left-3.5 pointer-events-none" />
@@ -344,217 +339,91 @@ export const LandingSignInScreen = ({
                         }}
                         placeholder="you@example.com"
                         autoComplete="email"
-                        autoFocus
-                        required
+                        required={isNewAccount}
                         className="w-full bg-[#FFFFFF] border border-[#191B1C]/[0.12] rounded-xl pl-10 pr-4 py-3 text-sm text-[#191B1C] placeholder-[#848D90] focus:outline-none focus:ring-2 focus:ring-[#46B8EF]/40 focus:border-[#46B8EF] shadow-xs transition"
                       />
                     </div>
                   </div>
+                )}
 
-                  {/* Password Field (If Password mode selected) */}
-                  {authMode === 'password' && (
-                    <div className="flex flex-col gap-1.5">
-                      <div className="flex items-center justify-between">
-                        <label
-                          htmlFor="user-password-input"
-                          className="text-xs font-bold text-[#191B1C]"
-                        >
-                          Password
-                        </label>
-                        <button
-                          type="button"
-                          onClick={() => alert('Password reset email dispatched.')}
-                          className="text-[11px] font-semibold text-sky-600 hover:underline cursor-pointer"
-                        >
-                          Forgot password?
-                        </button>
-                      </div>
-                      <div className="relative flex items-center">
-                        <Lock className="w-4 h-4 text-[#848D90] absolute left-3.5 pointer-events-none" />
-                        <input
-                          id="user-password-input"
-                          type={showPassword ? 'text' : 'password'}
-                          value={password}
-                          onChange={(e) => setPassword(e.target.value)}
-                          placeholder="••••••••"
-                          required
-                          className="w-full bg-[#FFFFFF] border border-[#191B1C]/[0.12] rounded-xl pl-10 pr-10 py-3 text-sm text-[#191B1C] placeholder-[#848D90] focus:outline-none focus:ring-2 focus:ring-[#46B8EF]/40 focus:border-[#46B8EF] shadow-xs transition"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => setShowPassword(!showPassword)}
-                          className="absolute right-3 text-[#848D90] hover:text-[#191B1C] cursor-pointer"
-                          aria-label={showPassword ? "Hide password" : "Show password"}
-                        >
-                          {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                        </button>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Submit CTA Button */}
-                  <button
-                    type="submit"
-                    disabled={isSubmitting}
-                    id="submit-email-btn"
-                    className="w-full mt-2 py-3 px-4 rounded-xl text-sm font-bold text-[#0c2b14] bg-gradient-to-r from-[#63EF46] to-[#46B8EF] hover:opacity-95 active:scale-[0.99] transition shadow-[0_6px_20px_rgba(70,184,239,0.35)] cursor-pointer flex items-center justify-center gap-2 disabled:opacity-50"
-                  >
-                    {isSubmitting ? (
-                      <>
-                        <RefreshCw className="w-4 h-4 animate-spin text-[#0c2b14]" />
-                        <span>Sending secure link...</span>
-                      </>
-                    ) : (
-                      <>
-                        <span>{authMode === 'magic_link' ? 'Continue with Email' : 'Sign In with Password'}</span>
-                        <ArrowRight className="w-4 h-4" />
-                      </>
-                    )}
-                  </button>
-
-                  {/* Auth mode toggle */}
-                  <div className="flex items-center justify-between text-xs pt-1 text-[#595F61]">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setAuthMode(authMode === 'magic_link' ? 'password' : 'magic_link');
-                        setErrorMsg('');
-                      }}
-                      className="text-xs font-semibold text-[#191B1C] hover:underline cursor-pointer"
+                {/* Password Field */}
+                <div className="flex flex-col gap-1.5">
+                  <div className="flex items-center justify-between">
+                    <label
+                      htmlFor="user-password-input"
+                      className="text-xs font-bold text-[#191B1C]"
                     >
-                      {authMode === 'magic_link'
-                        ? 'Sign in with password instead'
-                        : 'Use passwordless email magic link'}
-                    </button>
-                    <span className="text-[#848D90]">•</span>
-                    <button
-                      type="button"
-                      onClick={() => setIsNewAccount(!isNewAccount)}
-                      className="text-xs font-semibold text-emerald-700 hover:underline cursor-pointer"
-                    >
-                      {isNewAccount ? 'Have an account? Log in' : 'Create new account'}
-                    </button>
-                  </div>
-                </form>
-              )}
-
-              {/* STEP 2: Verification Code View (Magic Code) */}
-              {step === 'verification' && (
-                <div className="flex flex-col gap-5">
-                  <div className="flex flex-col gap-2">
-                    <label className="text-xs font-bold text-[#191B1C] text-center">
-                      Enter 6-digit verification code
+                      Password
                     </label>
-                    <div className="flex justify-between gap-1.5 sm:gap-2">
-                      {verificationCode.map((digit, idx) => (
-                        <input
-                          key={idx}
-                          id={`digit-input-${idx}`}
-                          type="text"
-                          inputMode="numeric"
-                          maxLength={1}
-                          value={digit}
-                          onChange={(e) => handleCodeChange(idx, e.target.value)}
-                          className="w-11 h-12 text-center text-lg font-extrabold bg-[#F8FAF9] border border-[#191B1C]/[0.15] rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#63EF46] focus:border-[#63EF46] transition"
-                        />
-                      ))}
-                    </div>
-                  </div>
-
-                  <button
-                    type="button"
-                    onClick={() => handleVerifyCode(verificationCode.join(''))}
-                    disabled={isSubmitting}
-                    className="w-full py-3 px-4 rounded-xl text-sm font-bold text-[#0c2b14] bg-gradient-to-r from-[#63EF46] to-[#46B8EF] hover:opacity-95 active:scale-[0.99] transition shadow-[0_6px_20px_rgba(70,184,239,0.35)] cursor-pointer flex items-center justify-center gap-2"
-                  >
-                    {isSubmitting ? (
-                      <>
-                        <RefreshCw className="w-4 h-4 animate-spin text-[#0c2b14]" />
-                        <span>Verifying...</span>
-                      </>
-                    ) : (
-                      <>
-                        <span>Verify & Enter Dashboard</span>
-                        <ArrowRight className="w-4 h-4" />
-                      </>
+                    {!isNewAccount && (
+                      <button
+                        type="button"
+                        onClick={() => alert('Password reset functionality coming soon!')}
+                        className="text-[11px] font-semibold text-sky-600 hover:underline cursor-pointer"
+                      >
+                        Forgot password?
+                      </button>
                     )}
-                  </button>
-
-                  <div className="flex items-center justify-between text-xs text-[#595F61]">
+                  </div>
+                  <div className="relative flex items-center">
+                    <Lock className="w-4 h-4 text-[#848D90] absolute left-3.5 pointer-events-none" />
+                    <input
+                      id="user-password-input"
+                      type={showPassword ? 'text' : 'password'}
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder="••••••••"
+                      required
+                      className="w-full bg-[#FFFFFF] border border-[#191B1C]/[0.12] rounded-xl pl-10 pr-10 py-3 text-sm text-[#191B1C] placeholder-[#848D90] focus:outline-none focus:ring-2 focus:ring-[#46B8EF]/40 focus:border-[#46B8EF] shadow-xs transition"
+                    />
                     <button
                       type="button"
-                      onClick={() => setStep('email')}
-                      className="hover:underline text-[#191B1C] font-semibold cursor-pointer"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 text-[#848D90] hover:text-[#191B1C] cursor-pointer"
+                      aria-label={showPassword ? "Hide password" : "Show password"}
                     >
-                      ← Change email
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setVerificationCode(['1', '2', '3', '4', '5', '6']);
-                        handleVerifyCode('123456');
-                      }}
-                      className="text-emerald-700 font-bold hover:underline cursor-pointer flex items-center gap-1"
-                    >
-                      <Zap className="w-3 h-3" />
-                      <span>One-Click Verify (Demo)</span>
+                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </button>
                   </div>
                 </div>
-              )}
 
-              {/* Or Divider */}
-              <div className="relative my-6 flex items-center justify-center">
-                <div className="w-full border-t border-[#191B1C]/[0.08]" />
-                <span className="absolute bg-white px-3 text-[11px] font-semibold text-[#848D90] uppercase tracking-wider">
-                  Or instant demo access
-                </span>
-              </div>
-
-              {/* One-Click Demo Profiles (Clean & Convenient for Testing/Grading) */}
-              <div className="flex flex-col gap-2">
+                {/* Submit CTA Button */}
                 <button
-                  type="button"
-                  onClick={() => handleQuickDemo('john@example.com')}
-                  className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl border border-[#191B1C]/[0.08] hover:bg-[#F3FAFE] hover:border-[#46B8EF]/40 transition text-left cursor-pointer group"
+                  type="submit"
+                  disabled={isSubmitting}
+                  id="submit-auth-btn"
+                  className="w-full mt-2 py-3 px-4 rounded-xl text-sm font-bold text-[#0c2b14] bg-gradient-to-r from-[#63EF46] to-[#46B8EF] hover:opacity-95 active:scale-[0.99] transition shadow-[0_6px_20px_rgba(70,184,239,0.35)] cursor-pointer flex items-center justify-center gap-2 disabled:opacity-50"
                 >
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-7 h-7 rounded-full bg-[#191B1C] text-white flex items-center justify-center text-xs font-bold">
-                      JD
-                    </div>
-                    <div>
-                      <p className="text-xs font-bold text-[#191B1C] group-hover:text-[#0b4d61]">
-                        John Doe (Primary User)
-                      </p>
-                      <p className="text-[10px] text-[#848D90]">john@example.com • Keto & Nut-Free</p>
-                    </div>
-                  </div>
-                  <span className="text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md">
-                    Quick Sign In
-                  </span>
+                  {isSubmitting ? (
+                    <>
+                      <RefreshCw className="w-4 h-4 animate-spin text-[#0c2b14]" />
+                      <span>{isNewAccount ? 'Creating account...' : 'Signing in...'}</span>
+                    </>
+                  ) : (
+                    <>
+                      <span>{isNewAccount ? 'Create Account' : 'Sign In'}</span>
+                      <ArrowRight className="w-4 h-4" />
+                    </>
+                  )}
                 </button>
 
-                <button
-                  type="button"
-                  onClick={() => handleQuickDemo('sarah.nutritionist@health.org')}
-                  className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl border border-[#191B1C]/[0.08] hover:bg-[#F3FAFE] hover:border-[#46B8EF]/40 transition text-left cursor-pointer group"
-                >
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-7 h-7 rounded-full bg-gradient-to-br from-[#63EF46] to-[#46B8EF] text-[#0c2b14] flex items-center justify-center text-xs font-bold">
-                      SM
-                    </div>
-                    <div>
-                      <p className="text-xs font-bold text-[#191B1C] group-hover:text-[#0b4d61]">
-                        Dr. Sarah Miller
-                      </p>
-                      <p className="text-[10px] text-[#848D90]">sarah@health.org • Mediterranean & High Protein</p>
-                    </div>
-                  </div>
-                  <span className="text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md">
-                    Quick Sign In
+                {/* Auth mode toggle */}
+                <div className="flex items-center justify-center text-xs pt-1 text-[#595F61]">
+                  <span className="text-[#848D90] mr-1">
+                    {isNewAccount ? 'Already have an account?' : "Don't have an account?"}
                   </span>
-                </button>
-              </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsNewAccount(!isNewAccount);
+                      setErrorMsg('');
+                    }}
+                    className="text-xs font-semibold text-emerald-700 hover:underline cursor-pointer"
+                  >
+                    {isNewAccount ? 'Sign in' : 'Create one'}
+                  </button>
+                </div>
+              </form>
 
               {/* Security & Terms Footer */}
               <div className="mt-6 pt-4 border-t border-[#191B1C]/[0.06] text-center">
