@@ -13,30 +13,6 @@ import {
   ArrowRight,
 } from 'lucide-react';
 
-/**
- * ============================================================================
- * DJANGO INTEGRATION GUIDE: DASHBOARD SCREEN (JavaScript / JSX)
- * ============================================================================
- * In a Django application, this screen is fed by two primary API endpoints:
- * 
- * 1. Metrics & Overview:
- *    GET /api/v1/dashboard/
- *    Returns the user's weekly order total, meal goals, health score, and budget.
- * 
- *    # In Django views.py:
- *    class DashboardOverviewView(APIView):
- *        permission_classes = [IsAuthenticated]
- *        def get(self, request):
- *            stats = UserDashboardStats.objects.get(user=request.user)
- *            return Response(DashboardStatsSerializer(stats).data)
- * 
- * 2. Conversational Assistant & Recommendations:
- *    POST /api/v1/assistant/chat/
- *    Payload: { "message": "Suggest high-protein snacks" }
- *    Returns updated chat message list with action cards and cart updates.
- * ============================================================================
- */
-
 export const DashboardScreen = ({
   stats,
   chatMessages,

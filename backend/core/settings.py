@@ -14,6 +14,7 @@ from pathlib import Path
 import os
 from dotenv import load_dotenv
 
+
 # Load environment variables from .env file
 load_dotenv()
 DB_NAME = os.getenv('POSTGRES_DB', 'django-insecure-default-key')
@@ -46,6 +47,7 @@ INSTALLED_APPS = [
     "api",
     'corsheaders',
     "rest_framework",
+    "rest_framework_simplejwt",
 ]
 
 MIDDLEWARE = [
@@ -113,10 +115,9 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': [],
-    'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.AllowAny',
-    ],
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ]
 }
 # Internationalization
 # https://docs.djangoproject.com/en/6.1/topics/i18n/
@@ -156,3 +157,5 @@ CSRF_TRUSTED_ORIGINS = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
 ]
+
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'

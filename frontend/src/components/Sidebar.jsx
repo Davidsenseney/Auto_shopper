@@ -6,6 +6,7 @@ import {
   ShoppingBag,
   Store,
   Sparkles,
+  LogIn,
 } from 'lucide-react';
 
 /**
@@ -18,6 +19,8 @@ export const Sidebar = ({
   cartCount,
   recipesCount,
   allergiesCount,
+  currentUser,
+  onSignOut,
 }) => {
   const navItems = [
     {
@@ -43,6 +46,12 @@ export const Sidebar = ({
       label: 'Shopping & Cart',
       icon: ShoppingBag,
       badge: cartCount ? `${cartCount}` : null,
+    },
+    {
+      id: 'signin',
+      label: 'Sign In / Landing',
+      icon: LogIn,
+      badge: currentUser?.isAuthenticated ? 'Active' : 'Login',
     },
   ];
 
@@ -150,8 +159,22 @@ export const Sidebar = ({
 
         {/* User Mini Profile Footnote */}
         <div className="flex items-center justify-between px-2 text-[11px] text-[#848D90]">
-          <span>Logged in as <strong>john@example.com</strong></span>
-          <span className="text-[#63EF46] font-bold">● Live</span>
+          <div className="flex flex-col truncate max-w-[140px]">
+            <span className="truncate">
+              {currentUser?.isAuthenticated ? (
+                <>User: <strong className="text-[#191B1C]">{currentUser.email}</strong></>
+              ) : (
+                <span className="text-[#595F61]">Guest Mode</span>
+              )}
+            </span>
+          </div>
+          <button
+            type="button"
+            onClick={() => onNavigate('signin')}
+            className="text-emerald-700 hover:text-emerald-800 font-bold text-[11px] cursor-pointer hover:underline"
+          >
+            {currentUser?.isAuthenticated ? 'Switch' : 'Sign In'}
+          </button>
         </div>
       </div>
     </aside>

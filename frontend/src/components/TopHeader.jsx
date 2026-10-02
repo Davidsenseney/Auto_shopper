@@ -6,9 +6,23 @@ export const TopHeader = ({
   onSearchChange,
   activeCartCount,
   onOpenCart,
+  currentUser,
+  onNavigate,
+  onSignOut,
 }) => {
   const [products, setProducts] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
+  const [showUserMenu, setShowUserMenu] = useState(false);
+
+  const getInitials = (name) => {
+    if (!name) return 'U';
+    const parts = name.trim().split(' ');
+    if (parts.length >= 2) return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
+    return name.slice(0, 2).toUpperCase();
+  };
+
+  const displayName = currentUser?.name || (currentUser?.email ? currentUser.email.split('@')[0] : 'Guest User');
+  const userInitials = getInitials(displayName);
 
   const handleKeyDown = async (e) => {
     if (e.key === 'Enter' && searchQuery.trim()) {
@@ -131,17 +145,62 @@ export const TopHeader = ({
           <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-[#46B8EF]" />
         </button>
 
-        <div
-          className="flex items-center gap-2 pl-1 pr-2 py-1 rounded-full bg-white border border-[#191B1C]/[0.08] shadow-xs cursor-pointer hover:border-[#191B1C]/20 transition"
-          id="user-profile-menu"
-        >
-          <div className="w-7 h-7 rounded-full bg-gradient-to-br from-[#191B1C] to-[#3B4245] text-white flex items-center justify-center font-bold text-xs">
-            JD
+        {/* User Profile & Sign-In Menu */}
+        <div className="relative">
+          <div
+            onClick={() => setShowUserMenu(!showUserMenu)}
+            className="flex items-center gap-2 pl-1 pr-2.5 py-1 rounded-full bg-white border border-[#191B1C]/[0.08] shadow-xs cursor-pointer hover:border-[#191B1C]/20 transition select-none"
+            id="user-profile-menu"
+          >
+            <div className="w-7 h-7 rounded-full bg-gradient-to-br from-[#191B1C] to-[#3B4245] text-white flex items-center justify-center font-bold text-xs">
+              {userInitials}
+            </div>
+            <span className="hidden md:inline text-xs font-bold text-[#191B1C] max-w-[100px] truncate">
+              {displayName}
+            </span>
+            <ChevronDown className="w-3.5 h-3.5 text-[#848D90]" />
           </div>
-          <span className="hidden md:inline text-xs font-bold text-[#191B1C]">
-            John Doe
-          </span>
-          <ChevronDown className="w-3.5 h-3.5 text-[#848D90]" />
+
+          {showUserMenu && (
+            <div className="absolute right-0 top-full mt-2 w-56 bg-white rounded-2xl shadow-xl border border-[#191B1C]/[0.08] p-2 z-50 animate-in fade-in slide-in-from-top-1 duration-150">
+              <div className="px-3 py-2 border-b border-gray-100">
+                <p className="text-xs font-bold text-[#191B1C] truncate">{displayName}</p>
+                <p className="text-[11px] text-[#848D90] truncate">
+                  {currentUser?.email || 'Not signed in'}
+                </p>
+              </div>
+
+              <div className="py-1">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowUserMenu(false);
+                    if (onNavigate) onNavigate('signin');
+                  }}
+                  className="w-full text-left px-3 py-2 text-xs font-semibold text-[#191B1C] hover:bg-[#F3FAFE] hover:text-[#0b4d61] rounded-xl transition flex items-center justify-between cursor-pointer"
+                >
+                  <span>{currentUser?.isAuthenticated ? 'Switch Account' : 'Sign In / Landing Page'}</span>
+                  <span className="text-[10px] bg-[#63EF46]/20 text-[#0c2b14] px-1.5 py-0.5 rounded font-bold">
+                    Email
+                  </span>
+                </button>
+
+                {currentUser?.isAuthenticated && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowUserMenu(false);
+                      if (onSignOut) onSignOut();
+                      if (onNavigate) onNavigate('signin');
+                    }}
+                    className="w-full text-left px-3 py-2 text-xs font-semibold text-red-600 hover:bg-red-50 rounded-xl transition cursor-pointer"
+                  >
+                    Sign Out
+                  </button>
+                )}
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </header>

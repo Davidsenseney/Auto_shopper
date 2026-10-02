@@ -6,6 +6,8 @@ import { RecipesScreen } from './pages/RecipesScreen';
 import { HealthScreen } from './pages/HealthScreen';
 import { ShoppingScreen } from './pages/ShoppingScreen';
 import { SettingsScreen } from './pages/SettingsScreen';
+import { LandingSignInScreen } from './pages/LandingSignInScreen';
+import { RecipeDetailModal } from './components/RecipeDetailModal';
 
 import {
   INITIAL_DASHBOARD_STATS,
@@ -22,6 +24,7 @@ import {
  * BRI - AI AUTO-SHOPPER (MAIN REACT APPLICATION COMPONENT in JSX / JS)
  * ============================================================================
  * State Architecture & Screen Routing:
+ * - Landing / Sign In: Hero landing page, email sign-in, verification & demo login
  * - Dashboard: metrics, assistant chat, action cards
  * - Recipes: meal planning, macro filters, detailed recipe modal
  * - Health: allergy safeguards, dietary framework selector, macronutrient bar
@@ -30,9 +33,16 @@ import {
  * ============================================================================
  */
 export function App() {
-  // Navigation State
-  const [activeScreen, setActiveScreen] = useState('dashboard');
+  // Navigation State - defaults to 'signin' landing page for instant viewing
+  const [activeScreen, setActiveScreen] = useState('signin');
   const [searchQuery, setSearchQuery] = useState('');
+
+  // Authentication & Current User State
+  const [currentUser, setCurrentUser] = useState({
+    email: 'john@example.com',
+    name: 'John Doe',
+    isAuthenticated: false,
+  });
 
   // Domain State (Can be populated from Django REST API endpoints via src/services/djangoApi.js)
   const [stats, setStats] = useState(INITIAL_DASHBOARD_STATS);
@@ -55,7 +65,7 @@ export function App() {
       const profile = rows[rows.length - 1];
 
       setAllergies(
-        (profile.allergies || []).map((allergey, index) => ({
+        (profile.allergies || []).map((allergy, index) => ({
           id: `allergy-${index}-${allergy.allergen_name}`,
           name: allergy.allergen_name,
           severity: allergy.severity,
@@ -235,6 +245,31 @@ export function App() {
     setCartItems((prev) => prev.filter((item) => item.id !== id));
   };
 
+  const handleSignInSuccess = (user) => {
+    setCurrentUser(user);
+    setActiveScreen('dashboard');
+  };
+
+  const handleSignOut = () => {
+    setCurrentUser({
+      email: '',
+      name: 'Guest User',
+      isAuthenticated: false,
+    });
+    setActiveScreen('signin');
+  };
+
+  // If user is on the sign-in landing screen, display the dedicated full-page landing experience
+  if (activeScreen === 'signin') {
+    return (
+      <LandingSignInScreen
+        initialEmail={currentUser?.email || ''}
+        onSignInSuccess={handleSignInSuccess}
+        onExploreDemo={() => setActiveScreen('dashboard')}
+      />
+    );
+  }
+
   return (
     <div className="min-h-screen bg-[#F8FAF9] text-[#191B1C] flex font-sans antialiased">
       {/* Persistent Left Sidebar Navigation */}
@@ -247,6 +282,8 @@ export function App() {
         cartCount={cartItems.length}
         recipesCount={recipes.length}
         allergiesCount={allergies.length}
+        currentUser={currentUser}
+        onSignOut={handleSignOut}
       />
 
       {/* Main Content Area */}
@@ -257,6 +294,9 @@ export function App() {
           onSearchChange={setSearchQuery}
           activeCartCount={cartItems.length}
           onOpenCart={() => setActiveScreen('shopping')}
+          currentUser={currentUser}
+          onNavigate={(screenId) => setActiveScreen(screenId)}
+          onSignOut={handleSignOut}
         />
 
         {/* Screen Router Viewport */}

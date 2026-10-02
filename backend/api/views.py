@@ -1,3 +1,5 @@
+import profile
+from requests import request
 import os
 import requests
 from requests.auth import HTTPBasicAuth
@@ -8,12 +10,53 @@ from google.genai import types
 from rest_framework import generics,permissions,status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
+from rest_framework.views import APIView
 import json
-from .models import RecentChat, KrogerStore, UserPreference, Recipe, HealthProfile
+from .models import RecentChat, KrogerStore, UserPreference, Recipe, HealthProfile, UserProfile
 from pathlib import Path
 from . import kroger 
-from .serializers import RecipeSerializer,HealthProfileSerializer
+from .serializers import RecipeSerializer,HealthProfileSerializer, RegisterSerializer
 from rest_framework.permissions import AllowAny
+from django.contrib.auth.models import User
+from django.core.mail import send_mail
+from django.conf import settings
+
+class RegisterView(generics.CreateAPIView):
+    queryset = User.objects.all()
+    serializer_class = RegisterSerializer
+    def create(self, request, *args, **kwargs):
+        serializer= self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = serializer.save()
+        profile = user.profile
+        token= profile.verification_token
+        
+        verification_link = f"http://localhost:5173/verify?token={token}"
+        send_mail(
+            subject="Welcome! Verify Your Email",
+            message=f"Click on the link to verify your email: {verification_link}",
+            from_email=os.environ.get("AuthEmail"),
+            recipient_list=[user.email],
+            fail_silently=False
+        )
+        return Response({"message": "User registered successfully. Please check your email to verify your account."})
+
+class VerifyEmailView(APIView):
+    def post(self,request):
+        token= request.data.get("token")
+        try:
+            profile= UserProfile.objects.get(verification_token=token)
+            if profile.is_verified:
+                return Response({"message":"Already verified"})
+            profile.is_verified=True
+            profile.save()
+            return Response({"message": "Email verified successfully"})
+        except UserProfile.DoesNotExist:
+            return Response({"message": "Invalid verification token"}, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+    
 
 client = genai.Client(api_key=os.environ.get("Google_API_KEY"))
 #for model in client.models.list():
