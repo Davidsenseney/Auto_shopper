@@ -48,9 +48,9 @@ export function App() {
   const [stats, setStats] = useState(INITIAL_DASHBOARD_STATS);
   const [chatMessages, setChatMessages] = useState(INITIAL_CHAT_MESSAGES);
   const [recipes, setRecipes] = useState(INITIAL_RECIPES);
-  const [allergies, setAllergies] = useState(INITIAL_ALLERGIES);
-  const [restrictions, setRestrictions] = useState(INITIAL_DIETARY_RESTRICTIONS);
-  const [frameworks, setFrameworks] = useState(INITIAL_DIETARY_FRAMEWORKS);
+  const [allergies, setAllergies] = useState([]);
+  const [restrictions, setRestrictions] = useState([]);
+  const [frameworks, setFrameworks] = useState(INITIAL_DIETARY_FRAMEWORKS.map((fw) => ({ ...fw, isActive: false})) );
   const [cartItems, setCartItems] = useState(INITIAL_CART_ITEMS);
 
   useEffect(() => {
@@ -60,7 +60,11 @@ export function App() {
       if (!response.ok) throw new Error('Could not load health profile');
 
       const rows = await response.json();
-      if (!Array.isArray(rows) || rows.length === 0) return;
+      if (!Array.isArray(rows) || rows.length === 0) {
+        setAllergies([]);
+        setRestrictions([]);
+        return;
+        } 
 
       const profile = rows[rows.length - 1];
 
@@ -325,6 +329,8 @@ export function App() {
               allergies={allergies}
               restrictions={restrictions}
               frameworks={frameworks}
+              onUpdateAllergies={setAllergies}
+              onUpdateRestrictions={setRestrictions}
             />
           )}
 
