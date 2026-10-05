@@ -13,23 +13,11 @@ class HealthProfile(models.Model):
     # Stores the arrays like Vegan, Low Carb, etc. as JSON data
     dietary_restrictions = models.JSONField(default=list, blank=True)
     desired_diets = models.JSONField(default=list, blank=True)
+    allergies = models.JSONField(default=list, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return f"Health Profile #{self.id}"
-
-class Allergy(models.Model):
-    SEVERITY_CHOICES = [
-        ('MILD', 'Mild'),
-        ('MODERATE', 'Moderate'),
-        ('SEVERE', 'Severe'),
-    ]
-    profile = models.ForeignKey(HealthProfile, on_delete=models.CASCADE, related_name='allergies')
-    allergen_name = models.CharField(max_length=100)
-    severity = models.CharField(max_length=20, choices= SEVERITY_CHOICES, default='MODERATE')
-
-    def __str__(self):
-        return f"{self.allergen_name} ({self.severity})"
 
 class RecentChat(models.Model):
     """stores recent chat messages for a user in preparation of payload.json"""
