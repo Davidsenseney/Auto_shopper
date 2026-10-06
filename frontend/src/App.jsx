@@ -8,6 +8,7 @@ import { ShoppingScreen } from './pages/ShoppingScreen';
 import { SettingsScreen } from './pages/SettingsScreen';
 import { LandingSignInScreen } from './pages/LandingSignInScreen';
 import { RecipeDetailModal } from './components/RecipeDetailModal';
+import { VerifyEmailScreen } from './components/VerifyEmailScreen';
 
 import {
   INITIAL_DASHBOARD_STATS,
@@ -18,6 +19,7 @@ import {
   INITIAL_DIETARY_FRAMEWORKS,
   INITIAL_CART_ITEMS,
 } from './data/initialData';
+
 
 /**
  * ============================================================================
@@ -34,7 +36,11 @@ import {
  */
 export function App() {
   // Navigation State - defaults to 'signin' landing page for instant viewing
-  const [activeScreen, setActiveScreen] = useState('signin');
+  const [activeScreen, setActiveScreen] = useState(() => {
+    if (window.location.pathname === '/verify') return 'verify';
+    return 'signin';
+  });
+
   const [searchQuery, setSearchQuery] = useState('');
 
   // Authentication & Current User State
@@ -44,64 +50,66 @@ export function App() {
     isAuthenticated: false,
   });
 
+
+
   // Domain State (Can be populated from Django REST API endpoints via src/services/djangoApi.js)
   const [stats, setStats] = useState(INITIAL_DASHBOARD_STATS);
   const [chatMessages, setChatMessages] = useState(INITIAL_CHAT_MESSAGES);
   const [recipes, setRecipes] = useState(INITIAL_RECIPES);
   const [allergies, setAllergies] = useState([]);
   const [restrictions, setRestrictions] = useState([]);
-  const [frameworks, setFrameworks] = useState(INITIAL_DIETARY_FRAMEWORKS.map((fw) => ({ ...fw, isActive: false})) );
+  const [frameworks, setFrameworks] = useState(INITIAL_DIETARY_FRAMEWORKS.map((fw) => ({ ...fw, isActive: false })));
   const [cartItems, setCartItems] = useState(INITIAL_CART_ITEMS);
 
   useEffect(() => {
-  const loadHeallthProfile = async () => {
-    try {
-      const response = await fetch('/api/health-profile/');
-      if (!response.ok) throw new Error('Could not load health profile');
+    const loadHeallthProfile = async () => {
+      try {
+        const response = await fetch('/api/health-profile/');
+        if (!response.ok) throw new Error('Could not load health profile');
 
-      const rows = await response.json();
-      if (!Array.isArray(rows) || rows.length === 0) {
-        setAllergies([]);
-        setRestrictions([]);
-        return;
-        } 
+        const rows = await response.json();
+        if (!Array.isArray(rows) || rows.length === 0) {
+          setAllergies([]);
+          setRestrictions([]);
+          return;
+        }
 
-      const profile = rows[rows.length - 1];
+        const profile = rows[rows.length - 1];
 
-      setAllergies(
-        (profile.allergies || []).map((allergy, index) => ({
-          id: `allergy-${index}-${allergy.allergen_name}`,
-          name: allergy.allergen_name,
-          severity: allergy.severity,
-          description: 'Saved from your health profile',
-          badgeStyle:
-            allergy.severity === 'SEVERE'
-              ? 'critical'
-              : allergy.severity === 'MODERATE'
-                ? 'high'
-                : 'preference',
-        }))
-      );
-      setRestrictions(
-        (profile.dietary_restrictions || []).map((title, index) => ({
-          id: `restriction-${index}`,
-          title,
-          description: 'Saved from your health profile.',
-          enforcement: 'Strict Cart Auto-Block',
-        }))
-      );
-      setFrameworks((prev) =>
-        prev.map((fw) => ({
-          ...fw,
-          isActive: (profile.desired_diets || []).includes(fw.name),
-        }))
-      );
-    } catch (error) {
-      console.error('Failed to load health profile:', error);
-    }
-  };
-  loadHeallthProfile();
-}, []);
+        setAllergies(
+          (profile.allergies || []).map((allergy, index) => ({
+            id: `allergy-${index}-${allergy.allergen_name}`,
+            name: allergy.allergen_name,
+            severity: allergy.severity,
+            description: 'Saved from your health profile',
+            badgeStyle:
+              allergy.severity === 'SEVERE'
+                ? 'critical'
+                : allergy.severity === 'MODERATE'
+                  ? 'high'
+                  : 'preference',
+          }))
+        );
+        setRestrictions(
+          (profile.dietary_restrictions || []).map((title, index) => ({
+            id: `restriction-${index}`,
+            title,
+            description: 'Saved from your health profile.',
+            enforcement: 'Strict Cart Auto-Block',
+          }))
+        );
+        setFrameworks((prev) =>
+          prev.map((fw) => ({
+            ...fw,
+            isActive: (profile.desired_diets || []).includes(fw.name),
+          }))
+        );
+      } catch (error) {
+        console.error('Failed to load health profile:', error);
+      }
+    };
+    loadHeallthProfile();
+  }, []);
   useEffect(() => {
     const loadRecipes = async () => {
       try {
@@ -273,6 +281,18 @@ export function App() {
       />
     );
   }
+
+  if (activeScreen === 'verify') {
+    return (
+      <VerifyEmailScreen
+        onNavigateToLogin={() => {
+          window.history.pushState({}, '', '/');
+          setActiveScreen('signin');
+        }}
+      />
+    );
+  }
+
 
   return (
     <div className="min-h-screen bg-[#F8FAF9] text-[#191B1C] flex font-sans antialiased">

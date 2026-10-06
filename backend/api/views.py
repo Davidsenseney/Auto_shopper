@@ -39,7 +39,7 @@ class RegisterView(generics.CreateAPIView):
             recipient_list=[user.email],
             fail_silently=False
         )
-        return Response({"message": "User registered successfully. Please check your email to verify your account."})
+        return Response({"message": "User registered successfully. Please check your email to verify your account."}, status=status.HTTP_201_CREATED)
 
 class VerifyEmailView(APIView):
     def post(self,request):
