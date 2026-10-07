@@ -4,9 +4,9 @@ from .models import RecentChat, Recipe, KrogerAccount, RecipeResult, HealthProfi
 # Register your models here.
 @admin.register(RecentChat)
 class RecentChatAdmin(admin.ModelAdmin):
-    list_display = ("id", "user", "created_at", "updated_at")
+    list_display = ("chat_id", "user", "created_at", "updated_at")
     list_filter = ("created_at",)
-    search_fields = ("id",)
+    search_fields = ("chat_id",)
     readonly_fields = ("created_at", "updated_at")
 
 @admin.register(KrogerAccount)

@@ -11,6 +11,7 @@ class UserProfile(models.Model):
 
 class HealthProfile(models.Model):
     # Stores the arrays like Vegan, Low Carb, etc. as JSON data
+
     dietary_restrictions = models.JSONField(default=list, blank=True)
     desired_diets = models.JSONField(default=list, blank=True)
     allergies = models.JSONField(default=list, blank=True)
@@ -21,7 +22,7 @@ class HealthProfile(models.Model):
 
 class RecentChat(models.Model):
     """stores recent chat messages for a user in preparation of payload.json"""
-
+    chat_id = models.AutoField(primary_key=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True, related_name="recent_chats")
 
     data = models.JSONField(default=dict)
