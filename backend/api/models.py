@@ -11,13 +11,15 @@ class UserProfile(models.Model):
 
 class HealthProfile(models.Model):
     # Stores the arrays like Vegan, Low Carb, etc. as JSON data
+    user = models.OneToOneField(User, on_delete=models.CASCADE, null=True, blank=True, related_name="health_profile")
     dietary_restrictions = models.JSONField(default=list, blank=True)
     desired_diets = models.JSONField(default=list, blank=True)
     allergies = models.JSONField(default=list, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"Health Profile #{self.id}"
+        name = self.user.username if self.user else f"#{self.id}"
+        return f"{name}'s Health Profile"
 
 class RecentChat(models.Model):
     """stores recent chat messages for a user in preparation of payload.json"""

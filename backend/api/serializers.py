@@ -16,6 +16,7 @@ class RegisterSerializer(serializers.ModelSerializer):
             password=validated_data['password']
         )
         UserProfile.objects.create(user=user)
+        HealthProfile.objects.create(user=user)
 
         return user
 
