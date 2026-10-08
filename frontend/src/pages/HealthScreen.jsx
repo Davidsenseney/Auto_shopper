@@ -102,9 +102,11 @@ export const HealthScreen = ({
       })),
     };
     try {
+      const tokenData = JSON.parse(localStorage.getItem('authTokens') || '{}');
+      const authHeader = tokenData.access ? { Authorization: `Bearer ${tokenData.access}`} : {};
       await fetch('/api/health-profile/', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json'},
+        headers: { 'Content-Type': 'application/json', ...authHeader,},
         body: JSON.stringify(payload),
       });
     } catch (err) {

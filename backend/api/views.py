@@ -327,9 +327,13 @@ def search_kroger_products(request):
     else:
         return JsonResponse({"error": "Failed to fetch products from Kroger"}, status=response.status_code)
 class HealthProfileCreateAPIView(generics.ListCreateAPIView):
-    queryset = HealthProfile.objects.all()
     serializer_class = HealthProfileSerializer
     permission_classes = [AllowAny]
+
+    def get_queryset(self):
+        if self.request.user.is_authenticated:
+            return HealthProfile.objects.filter(user=self.request.user)
+        return HealthProfile.objects.filter(user=None)
     
 class RecipeListView(generics.ListAPIView):
     queryset = Recipe.objects.all()

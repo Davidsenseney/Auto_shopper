@@ -3,7 +3,7 @@ from django.contrib.auth.models import User
 import uuid
 
 class UserProfile(models.Model):
-    user_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    
     user= models.OneToOneField(User, on_delete=models.CASCADE, related_name="profile")
     is_verified = models.BooleanField(default=False)
     verification_token= models.UUIDField(default=uuid.uuid4, editable=False)
@@ -12,6 +12,7 @@ class UserProfile(models.Model):
 
 class HealthProfile(models.Model):
     # Stores the arrays like Vegan, Low Carb, etc. as JSON data
+    user = models.OneToOneField(User, on_delete=models.CASCADE, null=True, blank=True, related_name="health_profile")
     dietary_restrictions = models.JSONField(default=list, blank=True)
     desired_diets = models.JSONField(default=list, blank=True)
     allergies = models.JSONField(default=list, blank=True)
@@ -23,7 +24,7 @@ class HealthProfile(models.Model):
 
 class RecentChat(models.Model):
     """stores recent chat messages for a user in preparation of payload.json"""
-    chat_id = models.AutoField(primary_key=True)
+    
     user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True, related_name="recent_chats")
 
     data = models.JSONField(default=dict)
