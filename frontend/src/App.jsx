@@ -64,7 +64,9 @@ export function App() {
   useEffect(() => {
     const loadHeallthProfile = async () => {
       try {
-        const response = await fetch('/api/health-profile/');
+        const tokenData = JSON.parse(localStorage.getItem('authTokens') || '{}');
+        const headers = tokenData.access ? { Authorization: `Bearer ${tokenData.access}` } : {};
+        const response = await fetch('/api/health-profile/', {headers});
         if (!response.ok) throw new Error('Could not load health profile');
 
         const rows = await response.json();
@@ -107,9 +109,9 @@ export function App() {
       } catch (error) {
         console.error('Failed to load health profile:', error);
       }
-    };
+    }
     loadHeallthProfile();
-  }, []);
+  }, [currentUser]);
   useEffect(() => {
     const loadRecipes = async () => {
       try {
