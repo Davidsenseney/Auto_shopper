@@ -3,7 +3,6 @@ from django.contrib.auth.models import User
 import uuid
 
 class UserProfile(models.Model):
-    
     user= models.OneToOneField(User, on_delete=models.CASCADE, related_name="profile")
     is_verified = models.BooleanField(default=False)
     verification_token= models.UUIDField(default=uuid.uuid4, editable=False)
@@ -24,7 +23,6 @@ class HealthProfile(models.Model):
 
 class RecentChat(models.Model):
     """stores recent chat messages for a user in preparation of payload.json"""
-    
     user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True, related_name="recent_chats")
 
     data = models.JSONField(default=dict)
