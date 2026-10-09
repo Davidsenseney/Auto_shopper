@@ -20,6 +20,7 @@ from rest_framework.permissions import AllowAny
 from django.contrib.auth.models import User
 from django.core.mail import send_mail
 from django.conf import settings
+from .services import process_user_meal_plan
 
 class RegisterView(generics.CreateAPIView):
     queryset = User.objects.all()
@@ -217,9 +218,9 @@ def save_chat_endpoint(request):
             status=status.HTTP_201_CREATED,
         )
     except Exception as e:
-        print(f"Error in save_chat_endpoint: {e}")
+        print(f"[save_chat_endpoint Error]: {type(e).__name__}: {e}")
         return Response(
-            {"error": "An error occurred while saving the chat."},
+            {"error": f"An error occurred while saving the chat: {str(e)}"},
             status=status.HTTP_500_INTERNAL_SERVER_ERROR,
         )
 
@@ -339,3 +340,17 @@ class RecipeListView(generics.ListAPIView):
     queryset = Recipe.objects.all()
     serializer_class = RecipeSerializer
     permission_classes = [permissions.AllowAny]
+
+@api_view(["POST"])
+def generate_meal_plan_view(request):
+    try:
+        session_key = request.session.session_key
+        result = process_user_meal_plan(
+            user=request.user if request.user.is_authenticated else None,
+            session_key=session_key,
+        )
+        return Response(result, status=status.HTTP_200_OK)
+    except Exception as e:
+        print(f"[generate_meal_plan_view Error]: {type(e).__name__}: {e}")
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+

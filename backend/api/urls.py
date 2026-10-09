@@ -8,7 +8,8 @@ from .views import (
     HealthProfileCreateAPIView,
     RecipeListView,
     RegisterView,
-    VerifyEmailView
+    VerifyEmailView,
+    generate_meal_plan_view
 )
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
@@ -27,4 +28,5 @@ urlpatterns = [
     path('verify-email/',VerifyEmailView.as_view(),name='verify-email'),
     path('login/',TokenObtainPairView.as_view(),name='login'),
     path('token/refresh/',TokenRefreshView.as_view(),name='token-refresh'),
+    path('generate-meal-plan/', generate_meal_plan_view, name='generate_meal_plan'),
 ]

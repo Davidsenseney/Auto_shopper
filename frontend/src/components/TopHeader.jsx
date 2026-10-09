@@ -29,13 +29,18 @@ export const TopHeader = ({
       e.preventDefault();
       try {
         const response = await fetch(`http://localhost:8000/api/kroger-search/?q=${encodeURIComponent(searchQuery)}`);
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error(`[TopHeader Error] Kroger search returned status ${response.status} (${response.statusText}):`, errorText);
+          return;
+        }
         const data = await response.json();
         
         // Kroger API typically returns items inside the 'data' array
         setProducts(data.data || []);
         setIsOpen(true);
       } catch (error) {
-        console.error("Error communicating with backend:", error);
+        console.error("[TopHeader Error] Failed communicating with backend on Kroger search:", error);
       }
     }
   };

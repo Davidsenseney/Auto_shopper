@@ -22,6 +22,38 @@ import {
 
 
 /**
+ * Safely parse API response bodies for error logging (JSON or plain text)
+ */
+const parseApiErrorDetails = async (response) => {
+  try {
+    const data = await response.json();
+    return data;
+  } catch {
+    try {
+      const text = await response.text();
+      return { message: text || response.statusText };
+    } catch {
+      return { message: response.statusText || 'Unknown error' };
+    }
+  }
+};
+
+/**
+ * Extract auth headers from localStorage safely
+ */
+const getAuthHeaders = () => {
+  try {
+    const rawTokens = localStorage.getItem('authTokens');
+    if (!rawTokens) return {};
+    const tokenData = JSON.parse(rawTokens);
+    return tokenData?.access ? { Authorization: `Bearer ${tokenData.access}` } : {};
+  } catch (err) {
+    console.warn('[Auth Warning] Could not parse auth tokens from localStorage:', err);
+    return {};
+  }
+};
+
+/**
  * ============================================================================
  * BRI - AI AUTO-SHOPPER (MAIN REACT APPLICATION COMPONENT in JSX / JS)
  * ============================================================================
@@ -64,10 +96,16 @@ export function App() {
   useEffect(() => {
     const loadHeallthProfile = async () => {
       try {
-        const tokenData = JSON.parse(localStorage.getItem('authTokens') || '{}');
-        const headers = tokenData.access ? { Authorization: `Bearer ${tokenData.access}` } : {};
-        const response = await fetch('/api/health-profile/', {headers});
-        if (!response.ok) throw new Error('Could not load health profile');
+        const headers = getAuthHeaders();
+        const response = await fetch('/api/health-profile/', { headers });
+        if (!response.ok) {
+          const errorDetails = await parseApiErrorDetails(response);
+          console.error(
+            `[Health Profile Error] Failed to load (${response.status} ${response.statusText}):`,
+            errorDetails
+          );
+          throw new Error(`Could not load health profile [Status ${response.status}]`);
+        }
 
         const rows = await response.json();
         if (!Array.isArray(rows) || rows.length === 0) {
@@ -107,16 +145,24 @@ export function App() {
           }))
         );
       } catch (error) {
-        console.error('Failed to load health profile:', error);
+        console.error('[Health Profile] Failed to load health profile:', error);
       }
-    }
+    };
     loadHeallthProfile();
   }, [currentUser]);
+
   useEffect(() => {
     const loadRecipes = async () => {
       try {
         const response = await fetch('/api/recipes/');
-        if (!response.ok) throw new Error('Could not load recipes');
+        if (!response.ok) {
+          const errorDetails = await parseApiErrorDetails(response);
+          console.error(
+            `[Recipes Error] Failed to load recipes (${response.status} ${response.statusText}):`,
+            errorDetails
+          );
+          throw new Error(`Could not load recipes [Status ${response.status}]`);
+        }
 
         const rows = await response.json();
         const recipesFromApi = rows.map((recipe) => ({
@@ -134,7 +180,7 @@ export function App() {
 
         setRecipes(recipesFromApi);
       } catch (error) {
-        console.error('Failed to load recipes:', error);
+        console.error('[Recipes] Failed to load recipes:', error);
       }
     };
     loadRecipes();
@@ -165,7 +211,14 @@ export function App() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
-      if (!response.ok) throw new Error('Chat request failed');
+      if (!response.ok) {
+        const errorDetails = await parseApiErrorDetails(response);
+        console.error(
+          `[Chat Error] /api/chat/ request failed (${response.status} ${response.statusText}):`,
+          errorDetails
+        );
+        throw new Error(`Chat request failed [Status ${response.status}]`);
+      }
       const data = await response.json();
       setChatMessages((prev) => [
         ...prev,
@@ -178,6 +231,7 @@ export function App() {
         },
       ]);
     } catch (err) {
+      console.error('[handleSendMessage Error]:', err);
       setChatMessages((prev) => [
         ...prev,
         {
@@ -195,21 +249,80 @@ export function App() {
       sender: m.sender === 'user' ? 'user' : 'model',
       text: m.content,
     }));
-
     try {
-      const response = await fetch('/api/shopping/extract/', {
+      const authHeader = getAuthHeaders();
+
+      // ---------------------------------------------------------
+      // ACTION 1: Save current chat context to database
+      // ---------------------------------------------------------
+      console.log('[handleGoShopping] Action 1: Saving chat context to database...');
+      const extractResponse = await fetch('/api/shopping/extract/', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...authHeader },
         body: JSON.stringify({ messages: message }),
       });
-      if (!response.ok) throw new Error('Shopping request failed');
-      const data = await response.json();
-      console.log("Saved RecentChat", data.id, data.id.source_messages);
+
+      if (!extractResponse.ok) {
+        const errorDetails = await parseApiErrorDetails(extractResponse);
+        console.error(
+          `[Error] Action 1 failed - /api/shopping/extract/ (${extractResponse.status} ${extractResponse.statusText}):`,
+          errorDetails
+        );
+        const detailMsg =
+          errorDetails?.error ||
+          errorDetails?.detail ||
+          errorDetails?.message ||
+          extractResponse.statusText;
+        throw new Error(`Step 1 (Save Chat Context) failed [Status ${extractResponse.status}]: ${detailMsg}`);
+      }
+
+      const chatData = await extractResponse.json();
+      console.log('1. Chat context saved to database successfully:', chatData);
+
+      // ---------------------------------------------------------
+      // ACTION 2: Generate meal plan and recipes using Gemini
+      // ---------------------------------------------------------
+      console.log('[handleGoShopping] Action 2: Generating meal plan and recipes...');
+      const recipeResponse = await fetch('/api/generate-meal-plan/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...authHeader },
+      });
+
+      if (!recipeResponse.ok) {
+        const errorDetails = await parseApiErrorDetails(recipeResponse);
+        console.error(
+          `[Error] Action 2 failed - /api/generate-meal-plan/ (${recipeResponse.status} ${recipeResponse.statusText}):`,
+          errorDetails
+        );
+        const detailMsg =
+          errorDetails?.error ||
+          errorDetails?.detail ||
+          errorDetails?.message ||
+          recipeResponse.statusText;
+        throw new Error(`Step 2 (Meal Plan Generation) failed [Status ${recipeResponse.status}]: ${detailMsg}`);
+      }
+
+      const planData = await recipeResponse.json();
+      console.log('2. Recipes created successfully:', planData);
+
+      if (planData.data?.recipes?.length > 0) {
+        console.log(`[handleGoShopping] Loaded ${planData.data.recipes.length} new recipes.`);
+        setRecipes((prev) => [...planData.data.recipes, ...prev]);
+        setActiveScreen('recipes');
+      } else {
+        console.warn('[handleGoShopping] Plan returned 0 recipes. Redirecting to shopping screen.');
+        setActiveScreen('shopping');
+      }
     } catch (err) {
-      console.error(err);
-      alert('Could not save Chat preferences for shopping. Please try again.');
+      console.error('[handleGoShopping Execution Error]:', {
+        errorMessage: err.message,
+        errorStack: err.stack,
+        originalError: err,
+      });
+      alert(`Could not complete shopping plan:\n${err.message}\n\nPlease check the browser console for details.`);
     }
   };
+
   // Add Recipe Ingredients to Cart
   const handleAddRecipeToCart = (recipe) => {
     const missingIngredients = recipe.ingredients.filter(
