@@ -12,6 +12,12 @@ import {
   Wheat,
   Droplet,
   Truck,
+  BookOpen,
+  ShoppingCart,
+  CheckCircle2,
+  Package,
+  ChevronDown,
+  ChevronRight,
 } from 'lucide-react';
 
 /**
@@ -37,12 +43,31 @@ export const ShoppingScreen = ({
   cartItems,
   onUpdateQuantity,
   onRemoveItem,
+  onAddRecipeToCart,
   searchQuery,
+  zipCode,
+  selectedStore,
+  locationId,
+  recipes = [],
 }) => {
   const [activeTab, setActiveTab] = useState('cart');
   const [groupBy, setGroupBy] = useState('recipe');
   const [appliedSavings, setAppliedSavings] = useState(false);
   const [checkoutStatus, setCheckoutStatus] = useState(null);
+  const [expandedRecipes, setExpandedRecipes] = useState({});
+  const [addedRecipes, setAddedRecipes] = useState({});
+
+  const toggleRecipeExpand = (recipeId) => {
+    setExpandedRecipes((prev) => ({ ...prev, [recipeId]: !prev[recipeId] }));
+  };
+
+  const handleAddToCart = (recipe) => {
+    onAddRecipeToCart(recipe);
+    setAddedRecipes((prev) => ({ ...prev, [recipe.id]: true }));
+    setTimeout(() => {
+      setAddedRecipes((prev) => ({ ...prev, [recipe.id]: false }));
+    }, 3000);
+  };
 
   const filteredItems = cartItems.filter((item) => {
     if (!searchQuery.trim()) return true;
@@ -124,10 +149,12 @@ export const ShoppingScreen = ({
               Direct API
             </span>
           </div>
-          <div className="text-3xl font-extrabold text-[#191B1C] mb-1 tracking-tight">
-            Kroger Direct
+          <div className="text-lg lg:text-xl font-extrabold text-[#191B1C] mb-1 tracking-tight truncate" title={selectedStore?.name || 'Kroger Direct'}>
+            {selectedStore?.name || 'Kroger Direct'}
           </div>
-          <div className="text-xs text-[#848D90]">Pickup & delivery synced</div>
+          <div className="text-xs text-[#848D90]">
+            ZIP {zipCode || selectedStore?.zip_code || '30329'} • #{locationId || selectedStore?.location_id || '01400374'}
+          </div>
         </div>
 
         <div className="bg-white rounded-2xl p-5 border border-slate-100 shadow-[0_2px_8px_rgba(0,0,0,0.03)]">
@@ -161,14 +188,13 @@ export const ShoppingScreen = ({
       >
         {/* Navigation Tabs & Group By Selector */}
         <div className="border-b border-gray-100 pb-px mb-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <nav className="flex space-x-7 text-sm font-semibold">
+          <nav className="flex space-x-7 text-sm font-semibold overflow-x-auto">
             <button
               onClick={() => setActiveTab('cart')}
-              className={`pb-3 cursor-pointer flex items-center gap-2 transition ${
-                activeTab === 'cart'
+              className={`pb-3 cursor-pointer flex items-center gap-2 transition whitespace-nowrap ${activeTab === 'cart'
                   ? 'text-gray-900 border-b-2 border-emerald-500 font-bold'
                   : 'text-gray-500 hover:text-gray-800'
-              }`}
+                }`}
             >
               <span>Active Auto-Cart</span>
               <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">
@@ -177,34 +203,45 @@ export const ShoppingScreen = ({
             </button>
 
             <button
-              onClick={() => setActiveTab('lists')}
-              className={`pb-3 cursor-pointer transition ${
-                activeTab === 'lists'
+              onClick={() => setActiveTab('ingredients')}
+              className={`pb-3 cursor-pointer flex items-center gap-2 transition whitespace-nowrap ${activeTab === 'ingredients'
                   ? 'text-gray-900 border-b-2 border-emerald-500 font-bold'
                   : 'text-gray-500 hover:text-gray-800'
-              }`}
+                }`}
+            >
+              <BookOpen className="w-3.5 h-3.5" />
+              <span>Recipe Ingredients</span>
+              <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-sky-100 text-sky-700">
+                {recipes.length}
+              </span>
+            </button>
+
+            <button
+              onClick={() => setActiveTab('lists')}
+              className={`pb-3 cursor-pointer transition whitespace-nowrap ${activeTab === 'lists'
+                  ? 'text-gray-900 border-b-2 border-emerald-500 font-bold'
+                  : 'text-gray-500 hover:text-gray-800'
+                }`}
             >
               Saved Lists
             </button>
 
             <button
               onClick={() => setActiveTab('compare')}
-              className={`pb-3 cursor-pointer transition ${
-                activeTab === 'compare'
+              className={`pb-3 cursor-pointer transition whitespace-nowrap ${activeTab === 'compare'
                   ? 'text-gray-900 border-b-2 border-emerald-500 font-bold'
                   : 'text-gray-500 hover:text-gray-800'
-              }`}
+                }`}
             >
               Store Comparison
             </button>
 
             <button
               onClick={() => setActiveTab('past')}
-              className={`pb-3 cursor-pointer transition ${
-                activeTab === 'past'
+              className={`pb-3 cursor-pointer transition whitespace-nowrap ${activeTab === 'past'
                   ? 'text-gray-900 border-b-2 border-emerald-500 font-bold'
                   : 'text-gray-500 hover:text-gray-800'
-              }`}
+                }`}
             >
               Past Orders
             </button>
@@ -240,11 +277,10 @@ export const ShoppingScreen = ({
           </div>
           <button
             onClick={() => setAppliedSavings(true)}
-            className={`font-semibold text-xs px-3.5 py-1.5 rounded-lg shadow-sm transition cursor-pointer ${
-              appliedSavings
+            className={`font-semibold text-xs px-3.5 py-1.5 rounded-lg shadow-sm transition cursor-pointer ${appliedSavings
                 ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
                 : 'bg-white border border-gray-200 hover:bg-gray-50 text-sky-600'
-            }`}
+              }`}
           >
             {appliedSavings ? '✓ Savings Applied' : 'Apply Kroger Savings'}
           </button>
@@ -258,104 +294,256 @@ export const ShoppingScreen = ({
           </div>
         )}
 
-        {/* Cart Item Cards List */}
-        <div className="flex flex-col gap-3.5" id="cart-items-list">
-          {filteredItems.map((item) => {
-            return (
-              <div
-                key={item.id}
-                className="bg-white border border-slate-200/80 rounded-2xl p-4 flex flex-col md:flex-row md:items-center justify-between gap-4 hover:border-slate-300 hover:shadow-xs transition"
-              >
-                {/* Left: Thumbnail & Metadata */}
-                <div className="flex items-start sm:items-center gap-3.5">
-                  <div className="w-12 h-12 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center shrink-0">
-                    {getItemIcon(item.iconType)}
-                  </div>
-
-                  <div>
-                    <div className="flex items-center gap-2 flex-wrap mb-1">
-                      <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-slate-100 text-slate-700">
-                        {item.storeBadge}
-                      </span>
-                      <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200/60">
-                        {item.attributeBadge}
-                      </span>
-                      {item.savingsBadge && (
-                        <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-amber-50 text-amber-700 border border-amber-200/60">
-                          {item.savingsBadge}
-                        </span>
-                      )}
-                    </div>
-
-                    <h4 className="text-sm font-bold text-slate-900 leading-snug">
-                      {item.name}
-                    </h4>
-                    <p className="text-xs text-slate-500 font-medium mt-0.5">
-                      {item.linkedRecipe}
-                    </p>
-                  </div>
-                </div>
-
-                {/* Right: Quantity Controls, Price, Actions */}
-                <div className="flex items-center justify-between md:justify-end gap-6 pt-2 md:pt-0 border-t md:border-t-0 border-slate-100">
-                  {/* Unit price & total */}
-                  <div className="text-right">
-                    <div className="flex items-center gap-1.5 justify-end">
-                      {item.originalPrice && (
-                        <span className="text-xs text-slate-400 line-through">
-                          ${item.originalPrice.toFixed(2)}
-                        </span>
-                      )}
-                      <span className="text-base font-extrabold text-slate-900">
-                        ${(item.price * item.quantity).toFixed(2)}
-                      </span>
-                    </div>
-                    <span className="text-[11px] text-slate-500">{item.unitPriceInfo}</span>
-                  </div>
-
-                  {/* Quantity Stepper */}
-                  <div className="flex items-center border border-slate-200 rounded-xl bg-slate-50/60 p-0.5">
-                    <button
-                      onClick={() => onUpdateQuantity(item.id, item.quantity - 1)}
-                      className="w-7 h-7 flex items-center justify-center text-slate-600 hover:text-slate-900 hover:bg-white rounded-lg transition cursor-pointer"
-                      title="Decrease quantity"
-                    >
-                      <Minus className="w-3.5 h-3.5" />
-                    </button>
-                    <span className="w-8 text-center text-xs font-bold text-slate-900">
-                      {item.quantity}
-                    </span>
-                    <button
-                      onClick={() => onUpdateQuantity(item.id, item.quantity + 1)}
-                      className="w-7 h-7 flex items-center justify-center text-slate-600 hover:text-slate-900 hover:bg-white rounded-lg transition cursor-pointer"
-                      title="Increase quantity"
-                    >
-                      <Plus className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-
-                  {/* Quick Action Buttons */}
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={() => alert(`Swap store for ${item.name}: Kroger Direct offers lowest basket price.`)}
-                      className="text-xs font-semibold text-slate-600 hover:text-slate-900 px-2.5 py-1.5 rounded-lg border border-slate-200 hover:bg-slate-50 transition cursor-pointer"
-                      title="Swap store"
-                    >
-                      Swap Store
-                    </button>
-                    <button
-                      onClick={() => onRemoveItem(item.id)}
-                      className="p-1.5 text-slate-400 hover:text-rose-600 transition cursor-pointer"
-                      title="Remove from cart"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
-                </div>
+        {/* ============ ACTIVE CART TAB ============ */}
+        {activeTab === 'cart' && (
+          <div className="flex flex-col gap-3.5" id="cart-items-list">
+            {filteredItems.length === 0 ? (
+              <div className="text-center py-12 px-4 border border-dashed border-slate-200 rounded-2xl bg-slate-50/50">
+                <ShoppingBag className="w-10 h-10 text-slate-300 mx-auto mb-3" />
+                <h3 className="text-sm font-bold text-slate-700">Your cart is empty</h3>
+                <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
+                  No items in your active cart. Use the{' '}
+                  <button onClick={() => setActiveTab('ingredients')} className="text-emerald-600 font-semibold underline cursor-pointer">
+                    Recipe Ingredients
+                  </button>{' '}tab to add items from your meal plan.
+                </p>
               </div>
-            );
-          })}
-        </div>
+            ) : (
+              filteredItems.map((item) => (
+                <div
+                  key={item.id}
+                  className="bg-white border border-slate-200/80 rounded-2xl p-4 flex flex-col md:flex-row md:items-center justify-between gap-4 hover:border-slate-300 hover:shadow-xs transition"
+                >
+                  {/* Left: Thumbnail & Metadata */}
+                  <div className="flex items-start sm:items-center gap-3.5">
+                    <div className="w-12 h-12 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center shrink-0">
+                      {getItemIcon(item.iconType)}
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2 flex-wrap mb-1">
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-slate-100 text-slate-700">
+                          {item.storeBadge}
+                        </span>
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200/60">
+                          {item.attributeBadge}
+                        </span>
+                        {item.savingsBadge && (
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-amber-50 text-amber-700 border border-amber-200/60">
+                            {item.savingsBadge}
+                          </span>
+                        )}
+                      </div>
+                      <h4 className="text-sm font-bold text-slate-900 leading-snug">{item.name}</h4>
+                      <p className="text-xs text-slate-500 font-medium mt-0.5">{item.linkedRecipe}</p>
+                    </div>
+                  </div>
+
+                  {/* Right: Quantity Controls, Price, Actions */}
+                  <div className="flex items-center justify-between md:justify-end gap-6 pt-2 md:pt-0 border-t md:border-t-0 border-slate-100">
+                    <div className="text-right">
+                      <div className="flex items-center gap-1.5 justify-end">
+                        {item.originalPrice && (
+                          <span className="text-xs text-slate-400 line-through">${item.originalPrice.toFixed(2)}</span>
+                        )}
+                        <span className="text-base font-extrabold text-slate-900">
+                          ${(item.price * item.quantity).toFixed(2)}
+                        </span>
+                      </div>
+                      <span className="text-[11px] text-slate-500">{item.unitPriceInfo}</span>
+                    </div>
+
+                    <div className="flex items-center border border-slate-200 rounded-xl bg-slate-50/60 p-0.5">
+                      <button
+                        onClick={() => onUpdateQuantity(item.id, item.quantity - 1)}
+                        className="w-7 h-7 flex items-center justify-center text-slate-600 hover:text-slate-900 hover:bg-white rounded-lg transition cursor-pointer"
+                        title="Decrease quantity"
+                      >
+                        <Minus className="w-3.5 h-3.5" />
+                      </button>
+                      <span className="w-8 text-center text-xs font-bold text-slate-900">{item.quantity}</span>
+                      <button
+                        onClick={() => onUpdateQuantity(item.id, item.quantity + 1)}
+                        className="w-7 h-7 flex items-center justify-center text-slate-600 hover:text-slate-900 hover:bg-white rounded-lg transition cursor-pointer"
+                        title="Increase quantity"
+                      >
+                        <Plus className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => alert(`Swap store for ${item.name}: Kroger Direct offers lowest basket price.`)}
+                        className="text-xs font-semibold text-slate-600 hover:text-slate-900 px-2.5 py-1.5 rounded-lg border border-slate-200 hover:bg-slate-50 transition cursor-pointer"
+                        title="Swap store"
+                      >
+                        Swap Store
+                      </button>
+                      <button
+                        onClick={() => onRemoveItem(item.id)}
+                        className="p-1.5 text-slate-400 hover:text-rose-600 transition cursor-pointer"
+                        title="Remove from cart"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        )}
+
+        {/* ============ RECIPE INGREDIENTS TAB ============ */}
+        {activeTab === 'ingredients' && (
+          <div className="flex flex-col gap-4" id="recipe-ingredients-list">
+            {recipes.length === 0 ? (
+              <div className="text-center py-12 px-4 border border-dashed border-slate-200 rounded-2xl bg-slate-50/50">
+                <BookOpen className="w-10 h-10 text-slate-300 mx-auto mb-3" />
+                <h3 className="text-sm font-bold text-slate-700">No recipes found</h3>
+                <p className="text-xs text-slate-500 mt-1">Add recipes from the Recipes screen to see their ingredients here.</p>
+              </div>
+            ) : (
+              recipes.map((recipe) => {
+                const cartIngredients = recipe.ingredients?.filter((i) => i.status === 'in_cart') || [];
+                const pantryIngredients = recipe.ingredients?.filter((i) => i.status === 'in_pantry') || [];
+                const totalCost = cartIngredients.reduce((sum, i) => sum + (i.price || 0), 0);
+                const isExpanded = expandedRecipes[recipe.id] !== false; // default open
+                const isAdded = addedRecipes[recipe.id];
+                const alreadyInCart = recipe.inCart;
+
+                return (
+                  <div
+                    key={recipe.id}
+                    className="bg-white border border-slate-200/80 rounded-2xl overflow-hidden hover:border-slate-300 transition"
+                  >
+                    {/* Recipe Header Row */}
+                    <div className="flex items-center justify-between gap-4 p-4">
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div
+                          className="w-11 h-11 rounded-xl shrink-0 bg-cover bg-center border border-slate-100"
+                          style={{ backgroundImage: `url(${recipe.imageUrl})` }}
+                        />
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap mb-0.5">
+                            {recipe.badges?.slice(0, 2).map((badge) => (
+                              <span key={badge} className="text-[10px] font-bold px-2 py-0.5 rounded bg-slate-100 text-slate-600">{badge}</span>
+                            ))}
+                            {alreadyInCart && (
+                              <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200/60">✓ In Cart</span>
+                            )}
+                          </div>
+                          <h4 className="text-sm font-bold text-slate-900 leading-snug truncate" title={recipe.title}>
+                            {recipe.title}
+                          </h4>
+                          <p className="text-xs text-slate-500 mt-0.5">
+                            {cartIngredients.length} to buy · {pantryIngredients.length} in pantry ·{' '}
+                            <span className="font-semibold text-slate-700">${totalCost.toFixed(2)} est.</span>
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-2 shrink-0">
+                        {/* Add to Cart Button */}
+                        <button
+                          onClick={() => handleAddToCart(recipe)}
+                          disabled={cartIngredients.length === 0}
+                          className={`flex items-center gap-1.5 text-xs font-bold px-3.5 py-2 rounded-xl transition cursor-pointer ${
+                            isAdded || alreadyInCart
+                              ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                              : cartIngredients.length === 0
+                              ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
+                              : 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-sm hover:shadow-md hover:-translate-y-0.5'
+                          }`}
+                        >
+                          {isAdded || alreadyInCart ? (
+                            <><CheckCircle2 className="w-3.5 h-3.5" /><span>Added</span></>
+                          ) : (
+                            <><ShoppingCart className="w-3.5 h-3.5" /><span>Add to Cart</span></>
+                          )}
+                        </button>
+
+                        {/* Expand/Collapse */}
+                        <button
+                          onClick={() => toggleRecipeExpand(recipe.id)}
+                          className="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-50 rounded-lg transition cursor-pointer"
+                        >
+                          {isExpanded
+                            ? <ChevronDown className="w-4 h-4" />
+                            : <ChevronRight className="w-4 h-4" />}
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Ingredient Detail Panel */}
+                    {isExpanded && (
+                      <div className="border-t border-slate-100 bg-slate-50/60 px-4 py-3">
+                        {/* Need to Buy */}
+                        {cartIngredients.length > 0 && (
+                          <div className="mb-3">
+                            <div className="flex items-center gap-1.5 mb-2">
+                              <ShoppingCart className="w-3.5 h-3.5 text-emerald-600" />
+                              <span className="text-[11px] font-bold text-emerald-700 uppercase tracking-wider">Need to Buy ({cartIngredients.length})</span>
+                            </div>
+                            <div className="flex flex-col gap-1.5">
+                              {cartIngredients.map((ing) => (
+                                <div
+                                  key={ing.id}
+                                  className="flex items-center justify-between bg-white rounded-xl px-3 py-2 border border-emerald-100/70"
+                                >
+                                  <div className="min-w-0">
+                                    <span className="text-xs font-semibold text-slate-800">{ing.name}</span>
+                                    {ing.note && (
+                                      <span className="text-[11px] text-slate-500 ml-1.5">{ing.note}</span>
+                                    )}
+                                  </div>
+                                  <div className="flex items-center gap-2 shrink-0 ml-3">
+                                    {ing.canSwap && (
+                                      <span className="text-[10px] font-semibold text-sky-600 bg-sky-50 px-1.5 py-0.5 rounded">Swappable</span>
+                                    )}
+                                    {ing.price != null && (
+                                      <span className="text-xs font-bold text-slate-900">${ing.price.toFixed(2)}</span>
+                                    )}
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Already in Pantry */}
+                        {pantryIngredients.length > 0 && (
+                          <div>
+                            <div className="flex items-center gap-1.5 mb-2">
+                              <Package className="w-3.5 h-3.5 text-slate-500" />
+                              <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">In Your Pantry ({pantryIngredients.length})</span>
+                            </div>
+                            <div className="flex flex-col gap-1.5">
+                              {pantryIngredients.map((ing) => (
+                                <div
+                                  key={ing.id}
+                                  className="flex items-center justify-between bg-white/70 rounded-xl px-3 py-2 border border-slate-100"
+                                >
+                                  <div className="min-w-0 flex items-center gap-2">
+                                    <CheckCircle2 className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                                    <span className="text-xs text-slate-500">{ing.name}</span>
+                                    {ing.note && (
+                                      <span className="text-[11px] text-slate-400 ml-1">{ing.note}</span>
+                                    )}
+                                  </div>
+                                  <span className="text-[10px] font-semibold text-slate-400 ml-3">Pantry</span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                );
+              })
+            )}
+          </div>
+        )}
 
         {/* Order Fulfillment & Auto-Checkout Footer Bar */}
         <div
@@ -375,14 +563,18 @@ export const ShoppingScreen = ({
               </span>
             </div>
             <p className="text-xs text-slate-500 mt-0.5">
-              Auto-fulfillment scheduled: <strong>Thursday 5:00 PM</strong> at your saved address
+              Auto-fulfillment scheduled: <strong>Thursday 5:00 PM</strong> • Store: <strong>{selectedStore?.name || 'Kroger'}</strong> (ZIP {zipCode || '30329'})
             </p>
           </div>
 
           <button
             onClick={handleCheckout}
             id="review-auto-checkout-btn"
-            className="px-6 py-3.5 rounded-full bg-gradient-to-r from-[#63EF46] to-[#46B8EF] text-[#0b2210] font-bold text-sm flex items-center justify-center gap-2 shadow-[0_4px_14px_rgba(70,184,239,0.35)] hover:shadow-[0_6px_18px_rgba(70,184,239,0.45)] hover:-translate-y-0.5 transition cursor-pointer"
+            disabled={cartItems.length === 0}
+            className={`px-6 py-3.5 rounded-full font-bold text-sm flex items-center justify-center gap-2 transition ${cartItems.length === 0
+                ? 'bg-slate-200 text-slate-400 cursor-not-allowed'
+                : 'bg-gradient-to-r from-[#63EF46] to-[#46B8EF] text-[#0b2210] shadow-[0_4px_14px_rgba(70,184,239,0.35)] hover:shadow-[0_6px_18px_rgba(70,184,239,0.45)] hover:-translate-y-0.5 cursor-pointer'
+              }`}
           >
             <span>Review & Auto-Checkout</span>
             <ArrowRight className="w-4 h-4" />

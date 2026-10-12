@@ -1,6 +1,6 @@
 from django.contrib.auth.models import User
 from rest_framework import serializers
-from .models import Recipe, HealthProfile, UserProfile
+from .models import Recipe, HealthProfile, UserProfile, KrogerProduct
 
 class RegisterSerializer(serializers.ModelSerializer):
     password= serializers.CharField(write_only=True)
@@ -49,3 +49,23 @@ class HealthProfileSerializer(serializers.ModelSerializer):
             profile.save()
             return profile
         return HealthProfile.objects.create(user=user, **validated_data)
+
+
+class KrogerProductSerializer(serializers.ModelSerializer):
+    """Serialize a cached KrogerProduct for the cart/product endpoints."""
+    store_name = serializers.CharField(source="store.name", read_only=True)
+    store_location_id = serializers.CharField(source="store.location_id", read_only=True)
+
+    class Meta:
+        model = KrogerProduct
+        fields = [
+            "id",
+            "upc",
+            "product_id",
+            "description",
+            "size",
+            "price",
+            "fetched_at",
+            "store_name",
+            "store_location_id",
+        ]
