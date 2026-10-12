@@ -26,37 +26,35 @@
     "budget": 100.0
   },
   "recent_chat_context": {
-    "meal_type": "all_meals",
+    "meal_type": "dinner",
     "spice_level": null,
-    "meal_frequency": "3 meals per day",
+    "meal_frequency": "7 days",
     "carb_preference": "high_carb",
-    "number_of_meals": 3,
-    "number_of_people": 1,
-    "snack_preferences": [
-      "high_protein"
-    ],
-    "cooking_skill_level": "beginner",
+    "number_of_meals": 7,
+    "number_of_people": 3,
+    "snack_preferences": [],
+    "cooking_skill_level": "advanced",
     "cuisine_preferences": [
-      "thai",
-      "japanese",
-      "southern"
+      "american",
+      "southern",
+      "italian"
     ],
     "preferred_meal_time": [
-      "breakfast",
-      "lunch",
       "dinner"
     ],
-    "cooking_time_minutes": 30,
-    "dietary_restrictions": [],
+    "cooking_time_minutes": null,
+    "dietary_restrictions": [
+      "shellfish allergy"
+    ],
     "disliked_ingredients": [
-      "onions"
+      "mustard"
     ],
     "favorite_ingredients": [
-      "protein"
+      "protein",
+      "pepper jack cheese",
+      "spices"
     ],
-    "preferred_cooking_method": [
-      "meal_prep"
-    ]
+    "preferred_cooking_method": []
   },
   "recipe_history": {
     "recently_cooked": [
