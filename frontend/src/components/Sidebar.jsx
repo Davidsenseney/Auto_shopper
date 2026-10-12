@@ -21,6 +21,9 @@ export const Sidebar = ({
   allergiesCount,
   currentUser,
   onSignOut,
+  zipCode,
+  selectedStore,
+  onOpenLocationSelector,
 }) => {
   const navItems = [
     {
@@ -145,7 +148,21 @@ export const Sidebar = ({
           </div>
 
           <p className="text-[11px] text-[#595F61] leading-relaxed">
-            Next auto-order scheduled for <strong className="text-[#191B1C]">Thursday, 5:00 PM</strong> with free delivery.
+            {selectedStore ? (
+              <>Location: <strong className="text-[#191B1C]">{selectedStore.name}</strong> ({zipCode || selectedStore.zip_code})</>
+            ) : (
+              <>Location: <strong className="text-[#191B1C]">ZIP {zipCode || '30329'}</strong></>
+            )}
+            {onOpenLocationSelector && (
+              <button
+                type="button"
+                onClick={onOpenLocationSelector}
+                className="block text-[11px] text-emerald-700 hover:text-emerald-800 font-bold underline mt-0.5 cursor-pointer text-left"
+              >
+                Change Location / ZIP
+              </button>
+            )}
+            <span className="block mt-0.5">Next auto-order: <strong className="text-[#191B1C]">Thursday, 5:00 PM</strong></span>
           </p>
 
           <button

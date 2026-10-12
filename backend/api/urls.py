@@ -8,7 +8,11 @@ from .views import (
     HealthProfileCreateAPIView,
     RecipeListView,
     RegisterView,
-    VerifyEmailView
+    VerifyEmailView,
+    # Kroger product / cart views
+    KrogerProductListView,
+    kroger_product_search,
+    build_cart,
 )
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
@@ -23,8 +27,13 @@ urlpatterns = [
     path('kroger-search/', search_kroger_products, name='kroger-search'),
     path("recipes/", RecipeListView.as_view(), name="recipe-list"),
     path('health-profile/', HealthProfileCreateAPIView.as_view(), name='health-profile-create'),
-    path('register/',RegisterView.as_view(),name='register'),
-    path('verify-email/',VerifyEmailView.as_view(),name='verify-email'),
-    path('login/',TokenObtainPairView.as_view(),name='login'),
-    path('token/refresh/',TokenRefreshView.as_view(),name='token-refresh'),
+    path('register/', RegisterView.as_view(), name='register'),
+    path('verify-email/', VerifyEmailView.as_view(), name='verify-email'),
+    path('login/', TokenObtainPairView.as_view(), name='login'),
+    path('token/refresh/', TokenRefreshView.as_view(), name='token-refresh'),
+
+    # Kroger product / cart endpoints
+    path('kroger/products/', KrogerProductListView.as_view(), name='kroger-product-list'),
+    path('kroger/product-search/', kroger_product_search, name='kroger-product-search'),
+    path('kroger/cart/build/', build_cart, name='kroger-cart-build'),
 ]

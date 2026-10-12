@@ -19,6 +19,9 @@ export const DashboardScreen = ({
   onSendMessage,
   onQuickAddCart,
   onGoShopping,
+  zipCode,
+  selectedStore,
+  onOpenLocationSelector,
 }) => {
   const [activeTab, setActiveTab] = useState('overview');
   const [inputText, setInputText] = useState('');
@@ -377,17 +380,30 @@ export const DashboardScreen = ({
           <div className="p-7 max-w-[800px] mx-auto flex flex-col gap-4">
             <div className="bg-[#eefcf4] border border-[#c3f2d6] rounded-2xl p-4 flex items-center justify-between">
               <div>
-                <h4 className="text-sm font-bold text-gray-900">Kroger Direct Auto-Sync Active</h4>
+                <h4 className="text-sm font-bold text-gray-900">
+                  Kroger Direct Auto-Sync Active {selectedStore ? `• ${selectedStore.name}` : ''}
+                </h4>
                 <p className="text-xs text-gray-600 mt-0.5">
-                  Synchronizing aisle inventory, digital coupons, and in-stock guarantees for active items.
+                  Synchronizing aisle inventory, digital coupons, and in-stock guarantees for ZIP {zipCode || selectedStore?.zip_code || '30329'} ({selectedStore?.address || 'Local Kroger Store'}).
                 </p>
               </div>
-              <span className="text-xs font-bold text-emerald-800 bg-emerald-100 px-3 py-1 rounded-full">
-                Connected
-              </span>
+              <div className="flex items-center gap-2 shrink-0">
+                <span className="text-xs font-bold text-emerald-800 bg-emerald-100 px-3 py-1 rounded-full">
+                  Connected
+                </span>
+                {onOpenLocationSelector && (
+                  <button
+                    type="button"
+                    onClick={onOpenLocationSelector}
+                    className="text-xs font-bold text-emerald-800 bg-white border border-emerald-300 hover:bg-emerald-50 px-2.5 py-1 rounded-lg transition cursor-pointer"
+                  >
+                    Change Store
+                  </button>
+                )}
+              </div>
             </div>
             <p className="text-xs text-slate-500">
-              Bri auto-evaluates sales prices every 4 hours. You currently have $5.40 in unapplied digital manufacturer coupons.
+              Bri auto-evaluates sales prices every 4 hours for Kroger Store #{selectedStore?.location_id || '01400374'}. Live pricing & availability are active.
             </p>
           </div>
         )}

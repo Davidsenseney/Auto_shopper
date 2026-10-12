@@ -12,10 +12,10 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.views import APIView
 import json
-from .models import RecentChat, KrogerStore, UserPreference, Recipe, HealthProfile, UserProfile
+from .models import RecentChat, KrogerStore, UserPreference, Recipe, HealthProfile, UserProfile, KrogerProduct
 from pathlib import Path
-from . import kroger 
-from .serializers import RecipeSerializer,HealthProfileSerializer, RegisterSerializer
+from . import kroger
+from .serializers import RecipeSerializer, HealthProfileSerializer, RegisterSerializer, KrogerProductSerializer
 from rest_framework.permissions import AllowAny
 from django.contrib.auth.models import User
 from django.core.mail import send_mail
@@ -304,28 +304,43 @@ def get_kroger_token():
     return None
 
 def search_kroger_products(request):
-    # Get search term from frontend query parameters (e.g., /api/search?q=milk)
+    """
+    GET /api/kroger-search/?q=<term>&location_id=<id>
+
+    Calls kroger.search_products() (which correctly passes locationId so Kroger
+    returns real price data) and forwards the raw product list to the frontend.
+    Falls back to the old token-only path when no location_id is supplied, but
+    prices will be absent in that case.
+    """
     query = request.GET.get('q', 'milk')
-    
-    token = get_kroger_token()
-    if not token:
-        return JsonResponse({"error": "Failed to authenticate with Kroger API"}, status=500)
-    
-    headers = {
-        'Authorization': f'Bearer {token}',
-        'Accept': 'application/json'
-    }
-    params = {
-        'filter.term': query,
-        'filter.limit': 10
-    }
-    
-    response = requests.get('https://api.kroger.com/v1/products', headers=headers, params=params)
-    
-    if response.status_code == 200:
-        return JsonResponse(response.json(), safe=False)
-    else:
-        return JsonResponse({"error": "Failed to fetch products from Kroger"}, status=response.status_code)
+    location_id = request.GET.get('location_id', '')
+
+    if not query.strip():
+        return JsonResponse({"error": "q param is required"}, status=400)
+
+    try:
+        if location_id:
+            # Use kroger.py helper — passes locationId so prices are included
+            raw_products = kroger.search_products(query, location_id, limit=10)
+        else:
+            # Fallback: no locationId → prices will be absent
+            token = kroger.get_client_token()
+            headers = {
+                'Authorization': f'Bearer {token}',
+                'Accept': 'application/json',
+            }
+            params = {'filter.term': query, 'filter.limit': 10}
+            resp = requests.get(
+                'https://api.kroger.com/v1/products', headers=headers, params=params, timeout=10
+            )
+            resp.raise_for_status()
+            raw_products = resp.json().get('data', [])
+    except Exception as e:
+        print(f"Kroger product search error: {e}")
+        return JsonResponse({"error": "Failed to fetch products from Kroger"}, status=502)
+
+    return JsonResponse({"data": raw_products}, safe=False)
+
 class HealthProfileCreateAPIView(generics.ListCreateAPIView):
     serializer_class = HealthProfileSerializer
     permission_classes = [AllowAny]
@@ -339,3 +354,153 @@ class RecipeListView(generics.ListAPIView):
     queryset = Recipe.objects.all()
     serializer_class = RecipeSerializer
     permission_classes = [permissions.AllowAny]
+
+
+# ---------------------------------------------------------------------------
+# Kroger product / cart views
+# ---------------------------------------------------------------------------
+
+class KrogerProductListView(generics.ListAPIView):
+    """
+    GET /api/kroger/products/?location_id=<id>
+
+    Returns cached KrogerProduct rows from the database.
+    Optionally filter by `location_id` query param to scope results to one store.
+    """
+    serializer_class = KrogerProductSerializer
+    permission_classes = [permissions.AllowAny]
+
+    def get_queryset(self):
+        qs = KrogerProduct.objects.select_related("store").all()
+        location_id = self.request.query_params.get("location_id")
+        if location_id:
+            qs = qs.filter(store__location_id=location_id)
+        return qs
+
+
+@api_view(["GET"])
+def kroger_product_search(request):
+    """
+    GET /api/kroger/product-search/?term=<search>&location_id=<id>
+
+    Calls the live Kroger Products API via kroger.py and returns the top match
+    without touching the database.  Good for quick look-ups from the frontend.
+    """
+    term = request.query_params.get("term")
+    location_id = request.query_params.get("location_id")
+
+    if not term:
+        return Response({"error": "'term' query param is required."}, status=status.HTTP_400_BAD_REQUEST)
+    if not location_id:
+        return Response({"error": "'location_id' query param is required."}, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        result = kroger.best_product_match(term, location_id)
+    except Exception as e:
+        print(f"Kroger product search failed: {e}")
+        return Response({"error": "Kroger API request failed."}, status=status.HTTP_502_BAD_GATEWAY)
+
+    if result is None:
+        return Response({"product": None, "message": "No match found."}, status=status.HTTP_200_OK)
+
+    return Response({"product": result}, status=status.HTTP_200_OK)
+
+
+@api_view(["POST"])
+def build_cart(request):
+    """
+    POST /api/kroger/cart/build/
+
+    Body (JSON)::
+        {
+            "location_id": "<kroger_location_id>",
+            "ingredients": ["chicken breast", "broccoli", "olive oil"]
+        }
+
+    For every ingredient:
+      1. Calls kroger.best_product_match() against the live Kroger API.
+      2. Upserts the result into the KrogerProduct DB table so future requests
+         can use the cached version.
+      3. Returns the full assembled cart with prices and any items that had
+         no match.
+
+    Response::
+        {
+            "location_id": "...",
+            "cart": [ { ...KrogerProduct fields... } ],
+            "not_found": [ "...", "..." ]
+        }
+    """
+    location_id = request.data.get("location_id")
+    ingredients = request.data.get("ingredients", [])
+
+    if not location_id:
+        return Response({"error": "'location_id' is required."}, status=status.HTTP_400_BAD_REQUEST)
+    if not ingredients or not isinstance(ingredients, list):
+        return Response({"error": "'ingredients' must be a non-empty list."}, status=status.HTTP_400_BAD_REQUEST)
+
+    # Ensure the store record exists in the DB (needed as FK for KrogerProduct)
+    store = KrogerStore.objects.filter(location_id=location_id).first()
+    if store is None:
+        # Try to pull the store info from the live API so we can create it
+        try:
+            store_data = kroger.search_stores(location_id, limit=1)
+            if store_data:
+                s = store_data[0]
+                store, _ = KrogerStore.objects.update_or_create(
+                    location_id=s["locationId"],
+                    defaults={
+                        "name": s.get("name", ""),
+                        "chain": s.get("chain", ""),
+                        "address": s["address"].get("addressLine1", ""),
+                        "city": s["address"].get("city", ""),
+                        "state": s["address"].get("state", ""),
+                        "zip_code": s["address"].get("zipCode", ""),
+                    },
+                )
+        except Exception as e:
+            print(f"Could not resolve store {location_id}: {e}")
+
+    if store is None:
+        return Response(
+            {"error": f"Store '{location_id}' not found. Save it via /api/preferences/ first."},
+            status=status.HTTP_404_NOT_FOUND,
+        )
+
+    cart_items = []
+    not_found = []
+
+    for ingredient in ingredients:
+        try:
+            match = kroger.best_product_match(ingredient, location_id)
+        except Exception as e:
+            print(f"Kroger lookup failed for '{ingredient}': {e}")
+            not_found.append(ingredient)
+            continue
+
+        if match is None:
+            not_found.append(ingredient)
+            continue
+
+        # Upsert into the local DB cache
+        product, _ = KrogerProduct.objects.update_or_create(
+            upc=match["upc"],
+            store=store,
+            defaults={
+                "product_id": match.get("product_id", ""),
+                "description": match.get("description", ""),
+                "size": match.get("size", ""),
+                "price": match.get("price"),
+            },
+        )
+        cart_items.append(product)
+
+    serializer = KrogerProductSerializer(cart_items, many=True)
+    return Response(
+        {
+            "location_id": location_id,
+            "cart": serializer.data,
+            "not_found": not_found,
+        },
+        status=status.HTTP_200_OK,
+    )

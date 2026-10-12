@@ -6,6 +6,7 @@ import { RecipesScreen } from './pages/RecipesScreen';
 import { HealthScreen } from './pages/HealthScreen';
 import { ShoppingScreen } from './pages/ShoppingScreen';
 import { SettingsScreen } from './pages/SettingsScreen';
+import { KrogerLocationModal } from './components/KrogerLocationModal';
 import { LandingSignInScreen } from './pages/LandingSignInScreen';
 import { RecipeDetailModal } from './components/RecipeDetailModal';
 import { VerifyEmailScreen } from './components/VerifyEmailScreen';
@@ -60,6 +61,55 @@ export function App() {
   const [restrictions, setRestrictions] = useState([]);
   const [frameworks, setFrameworks] = useState(INITIAL_DIETARY_FRAMEWORKS.map((fw) => ({ ...fw, isActive: false })));
   const [cartItems, setCartItems] = useState(INITIAL_CART_ITEMS);
+
+  // Kroger Location & ZIP State (defaults to 30329 Atlanta / Kroger Store #01400374)
+  const [zipCode, setZipCode] = useState(() => {
+    try {
+      return localStorage.getItem('kroger_zip_code') || '30329';
+    } catch {
+      return '30329';
+    }
+  });
+
+  const [selectedStore, setSelectedStore] = useState(() => {
+    try {
+      const saved = localStorage.getItem('kroger_store');
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
+  });
+
+  const [locationId, setLocationId] = useState(() => {
+    try {
+      return localStorage.getItem('kroger_location_id') || '01400374';
+    } catch {
+      return '01400374';
+    }
+  });
+
+  const [isLocationModalOpen, setIsLocationModalOpen] = useState(false);
+
+  const handleUpdateLocation = async (newZip, store) => {
+    setZipCode(newZip);
+    setSelectedStore(store);
+    const locId = store?.location_id || '';
+    setLocationId(locId);
+
+    try {
+      localStorage.setItem('kroger_zip_code', newZip);
+      if (locId) localStorage.setItem('kroger_location_id', locId);
+      if (store) localStorage.setItem('kroger_store', JSON.stringify(store));
+
+      await fetch('/api/preferences/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ store }),
+      });
+    } catch (e) {
+      console.warn('Could not persist location to backend:', e);
+    }
+  };
 
   useEffect(() => {
     const loadHeallthProfile = async () => {
@@ -310,6 +360,9 @@ export function App() {
         allergiesCount={allergies.length}
         currentUser={currentUser}
         onSignOut={handleSignOut}
+        zipCode={zipCode}
+        selectedStore={selectedStore}
+        onOpenLocationSelector={() => setIsLocationModalOpen(true)}
       />
 
       {/* Main Content Area */}
@@ -323,6 +376,30 @@ export function App() {
           currentUser={currentUser}
           onNavigate={(screenId) => setActiveScreen(screenId)}
           onSignOut={handleSignOut}
+          preferredLocationId={locationId}
+          zipCode={zipCode}
+          selectedStore={selectedStore}
+          onOpenLocationSelector={() => setIsLocationModalOpen(true)}
+          onAddToCart={(product) => {
+            const regularPrice = product.items?.[0]?.price?.regular;
+            const promoPrice = product.items?.[0]?.price?.promo;
+            const price = (promoPrice != null && promoPrice < regularPrice) ? promoPrice : (regularPrice ?? null);
+            const newItem = {
+              id: `search-${product.productId}-${Date.now()}`,
+              name: product.description,
+              storeBadge: selectedStore?.name || 'Kroger',
+              attributeBadge: locationId ? 'Store Verified' : 'Manual Search',
+              linkedRecipe: '',
+              price: price ?? 0,
+              unitPriceInfo: price ? `$${price.toFixed(2)} / ea` : 'Price N/A',
+              quantity: 1,
+              iconType: 'bag',
+            };
+            setCartItems((prev) => {
+              const exists = prev.some((i) => i.id === newItem.id || i.name.toLowerCase() === newItem.name.toLowerCase());
+              return exists ? prev : [newItem, ...prev];
+            });
+          }}
         />
 
         {/* Screen Router Viewport */}
@@ -335,6 +412,9 @@ export function App() {
               onQuickAddCart={() => { }}
               onGoShopping={handleGoShopping}
               cartItems={cartItems}
+              zipCode={zipCode}
+              selectedStore={selectedStore}
+              onOpenLocationSelector={() => setIsLocationModalOpen(true)}
             />
           )
           }
@@ -361,7 +441,12 @@ export function App() {
               cartItems={cartItems}
               onUpdateQuantity={handleUpdateQuantity}
               onRemoveItem={handleRemoveCartItem}
+              onAddRecipeToCart={handleAddRecipeToCart}
               searchQuery={searchQuery}
+              zipCode={zipCode}
+              selectedStore={selectedStore}
+              locationId={locationId}
+              recipes={recipes}
             />
           )}
 
@@ -377,6 +462,15 @@ export function App() {
           onAddToCart={handleAddRecipeToCart}
         />
       )}
+
+      {/* Pop-Out Kroger Store & Pricing Location Modal */}
+      <KrogerLocationModal
+        isOpen={isLocationModalOpen}
+        onClose={() => setIsLocationModalOpen(false)}
+        zipCode={zipCode}
+        selectedStore={selectedStore}
+        onUpdateLocation={handleUpdateLocation}
+      />
     </div>
   );
 }
