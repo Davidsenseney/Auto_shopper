@@ -13,6 +13,7 @@ from .views import (
     KrogerProductListView,
     kroger_product_search,
     build_cart,
+    generate_meal_plan_view
 )
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
@@ -36,4 +37,5 @@ urlpatterns = [
     path('kroger/products/', KrogerProductListView.as_view(), name='kroger-product-list'),
     path('kroger/product-search/', kroger_product_search, name='kroger-product-search'),
     path('kroger/cart/build/', build_cart, name='kroger-cart-build'),
+    path('generate-meal-plan/', generate_meal_plan_view, name='generate_meal_plan'),
 ]

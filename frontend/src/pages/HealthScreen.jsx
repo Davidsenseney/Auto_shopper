@@ -54,6 +54,16 @@ const toBackendSeverity = (severity) => {
   return 'MODERATE';
 };
 
+const getAuthHeaders = () => {
+  try {
+    const tokenData = JSON.parse(localStorage.getItem('authTokens') || '{}');
+    return tokenData?.access ? { Authorization: `Bearer ${tokenData.access}` } : {};
+  } catch (err) {
+    console.warn('[Auth Warning] Could not parse auth tokens from localStorage:', err);
+    return {};
+  }
+};
+
 export const HealthScreen = ({
   allergies: initialAllergies,
   restrictions: initialRestrictions,
@@ -102,15 +112,21 @@ export const HealthScreen = ({
       })),
     };
     try {
-      const tokenData = JSON.parse(localStorage.getItem('authTokens') || '{}');
-      const authHeader = tokenData.access ? { Authorization: `Bearer ${tokenData.access}`} : {};
-      await fetch('/api/health-profile/', {
+      const authHeader = getAuthHeaders();
+      const response = await fetch('/api/health-profile/', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', ...authHeader,},
+        headers: { 'Content-Type': 'application/json', ...authHeader },
         body: JSON.stringify(payload),
       });
+      if (!response.ok) {
+        const errorBody = await response.text();
+        console.error(
+          `[Health Profile Error] Failed to save framework choice (${response.status} ${response.statusText}):`,
+          errorBody
+        );
+      }
     } catch (err) {
-      console.error('Failed to save framework choice', err);
+      console.error('[Health Profile Error] Exception while saving framework choice:', err);
     }
   };
 
@@ -137,13 +153,19 @@ export const HealthScreen = ({
       }))
     };
     try {
+      const authHeader = getAuthHeaders();
       const response = await fetch('/api/health-profile/', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...authHeader },
         body: JSON.stringify(payload),
       });
       if (!response.ok) {
-        throw new Error(await response.text());
+        const errorBody = await response.text();
+        console.error(
+          `[Health Profile Error] Failed to save allergy (${response.status} ${response.statusText}):`,
+          errorBody
+        );
+        throw new Error(`Failed to save allergy [${response.status}]: ${errorBody}`);
       }
       setAllergies(nextAllergies);
       if (onUpdateAllergies)
@@ -151,10 +173,11 @@ export const HealthScreen = ({
       setNewAllergyName('');
       setShowAddModal(false);
     } catch (err) {
-      console.error('Failed to save health profile', err)
-      alert('Could not save allergy to the backend.');
+      console.error('[Health Profile Error] Exception while saving allergy:', err);
+      alert('Could not save allergy to the backend. Check console logs for details.');
     }
   };
+
   const handleDeleteAllergy = async (allergyID) => {
     const nextAllergies = allergies.filter((item) => item.id !== allergyID);
     const payload = {
@@ -166,63 +189,76 @@ export const HealthScreen = ({
       })),
     };
     try {
+      const authHeader = getAuthHeaders();
       const response = await fetch('/api/health-profile/', {
         method: 'POST',
-        headers: {'Content-Type': 'application/json'},
+        headers: { 'Content-Type': 'application/json', ...authHeader },
         body: JSON.stringify(payload),
       });
       if (!response.ok) {
-        throw new Error(await response.text());
+        const errorBody = await response.text();
+        console.error(
+          `[Health Profile Error] Failed to delete allergy (${response.status} ${response.statusText}):`,
+          errorBody
+        );
+        throw new Error(`Failed to delete allergy [${response.status}]: ${errorBody}`);
       }
       setAllergies(nextAllergies);
       if (onUpdateAllergies)
         onUpdateAllergies(nextAllergies);
     } catch (err) {
-      console.error('Failed to delete allergy', err);
-      alert('Could not delete allergy from backend');
+      console.error('[Health Profile Error] Exception while deleting allergy:', err);
+      alert('Could not delete allergy from backend. Check console logs for details.');
     }
   };
 
-    const handleCreateRestriction = async (e) => {
-      e.preventDefault();
-      if (!newRestrictionTitle.trim()) 
-        return;
-      const newRestriction = {
-        id: `restriction-${Date.now()}`,
-        title: newRestrictionTitle.trim(),
-        description: newRestrictionDesc.trim() || 'User-defined dietary restriction.',
-        enforcement: newEnforcement,
-      };
-      const nextRestrictions = 
-      [...restrictions, newRestriction];
-      const payload = {
-        dietary_restrictions: nextRestrictions.map((r) => r.title),
-        desired_diets: frameworks.filter((f) => f.isActive).map((f) => f.name),
-        allergies: allergies.map((a) => ({
-          allergen_name: a.name,
-          severity: toBackendSeverity(a.severity)
-        }))
-      };
-      try {
-        const response = await fetch('/api/health-profile/', {
-          method: 'POST',
-          headers: {'Content-Type': 'application/json'},
-          body: JSON.stringify(payload),
-        });
-        if (!response.ok) {
-          throw new Error(await response.text());
-        }
-        setRestrictions(nextRestrictions);
-        if (onUpdateRestrictions)
-          onUpdateRestrictions(nextRestrictions);
-        setNewRestrictionTitle('');
-        setNewRestrictionDesc('');
-        setShowRestrictionModal(false);
-        } catch (err) {
-  console.error( 'Failed to save dietary restriction', err)
-  alert('Could not save dietary restriction to backend');
+  const handleCreateRestriction = async (e) => {
+    e.preventDefault();
+    if (!newRestrictionTitle.trim()) 
+      return;
+    const newRestriction = {
+      id: `restriction-${Date.now()}`,
+      title: newRestrictionTitle.trim(),
+      description: newRestrictionDesc.trim() || 'User-defined dietary restriction.',
+      enforcement: newEnforcement,
+    };
+    const nextRestrictions = 
+    [...restrictions, newRestriction];
+    const payload = {
+      dietary_restrictions: nextRestrictions.map((r) => r.title),
+      desired_diets: frameworks.filter((f) => f.isActive).map((f) => f.name),
+      allergies: allergies.map((a) => ({
+        allergen_name: a.name,
+        severity: toBackendSeverity(a.severity)
+      }))
+    };
+    try {
+      const authHeader = getAuthHeaders();
+      const response = await fetch('/api/health-profile/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...authHeader },
+        body: JSON.stringify(payload),
+      });
+      if (!response.ok) {
+        const errorBody = await response.text();
+        console.error(
+          `[Health Profile Error] Failed to save restriction (${response.status} ${response.statusText}):`,
+          errorBody
+        );
+        throw new Error(`Failed to save dietary restriction [${response.status}]: ${errorBody}`);
       }
+      setRestrictions(nextRestrictions);
+      if (onUpdateRestrictions)
+        onUpdateRestrictions(nextRestrictions);
+      setNewRestrictionTitle('');
+      setNewRestrictionDesc('');
+      setShowRestrictionModal(false);
+    } catch (err) {
+      console.error('[Health Profile Error] Exception while saving dietary restriction:', err);
+      alert('Could not save dietary restriction to backend. Check console logs for details.');
+    }
   };
+
   const handleDeleteRestriction = async (restrictionId) => {
     const nextRestrictions = restrictions.filter((r) => r.id !== restrictionId);
     const payload = {
@@ -234,20 +270,26 @@ export const HealthScreen = ({
       })),
     };
     try {
+      const authHeader = getAuthHeaders();
       const response = await fetch('/api/health-profile/', {
         method: 'POST',
-        headers: {'Content-Type': 'application/json'},
+        headers: { 'Content-Type': 'application/json', ...authHeader },
         body: JSON.stringify(payload),
       });
       if (!response.ok) {
-        throw new Error(await response.text());
+        const errorBody = await response.text();
+        console.error(
+          `[Health Profile Error] Failed to delete restriction (${response.status} ${response.statusText}):`,
+          errorBody
+        );
+        throw new Error(`Failed to delete dietary restriction [${response.status}]: ${errorBody}`);
       }
       setRestrictions(nextRestrictions);
       if (onUpdateRestrictions)
         onUpdateRestrictions(nextRestrictions);
     } catch (err) {
-      console.error('Failed to delete dietary restriction', err);
-      alert('Could not delete dietary restriction from backend');
+      console.error('[Health Profile Error] Exception while deleting dietary restriction:', err);
+      alert('Could not delete dietary restriction from backend. Check console logs for details.');
     }
   };
 
