@@ -80,7 +80,7 @@ export const RecipeDetailModal = ({ recipe, onClose, onAddToCart }) => {
         <section aria-labelledby="recipe-steps-title" className="mb-5">
           <div className="flex items-center justify-between gap-3 mb-3">
             <h4 id="recipe-steps-title" className="text-base font-bold text-[#191B1C]">
-              How to make it
+              How to Make It
             </h4>
             {recipe.prepTimeMinutes != null && (
               <span className="flex items-center gap-1.5 text-xs font-semibold text-[#595F61]">
