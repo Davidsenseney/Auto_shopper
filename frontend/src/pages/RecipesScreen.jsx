@@ -297,11 +297,14 @@ export const RecipesScreen = ({
                   </div>
 
                   {/* Title & Description */}
-                  <h3
-                    className="text-base font-bold text-gray-900 mb-1 leading-snug cursor-pointer hover:text-sky-700 transition"
-                    onClick={() => onSelectRecipe(recipe)}
-                  >
-                    {recipe.title}
+                  <h3 className="text-base font-bold text-gray-900 mb-1 leading-snug">
+                    <button
+                      type="button"
+                      className="text-left hover:text-sky-700 transition cursor-pointer"
+                      onClick={() => onSelectRecipe(recipe)}
+                    >
+                      {recipe.title}
+                    </button>
                   </h3>
                   <p className="text-xs text-gray-500 mb-4 leading-relaxed line-clamp-2">
                     {recipe.description}
