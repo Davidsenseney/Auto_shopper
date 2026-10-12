@@ -77,6 +77,51 @@ export const RecipeDetailModal = ({ recipe, onClose, onAddToCart }) => {
           </div>
         </div>
 
+        {Array.isArray(recipe.ingredients) && recipe.ingredients.length > 0 && (
+          <section aria-labelledby="recipe-ingredients-title" className="mb-5">
+            <h4 id="recipe-ingredients-title" className="text-base font-bold text-[#191B1C] mb-3">
+              Ingredients
+            </h4>
+            <ul className="space-y-2">
+              {recipe.ingredients.map((ingredient, index) => {
+                const name =
+                  typeof ingredient === 'string'
+                    ? ingredient
+                    : ingredient?.name ??
+                      ingredient?.item ??
+                      ingredient?.ingredient_name ??
+                      ingredient?.ingredient?.name ??
+                      ingredient?.ingredient;
+                const quantity =
+                  typeof ingredient === 'object' && ingredient !== null
+                    ? [ingredient.quantity, ingredient.unit].filter(Boolean).join(' ')
+                    : '';
+                const note =
+                  typeof ingredient === 'object' && ingredient !== null
+                    ? ingredient.note
+                    : null;
+
+                return (
+                  <li
+                    key={ingredient?.id ?? `${name ?? 'ingredient'}-${index}`}
+                    className="rounded-xl bg-[#F8FAF9] px-4 py-3"
+                  >
+                    <span className="text-sm font-semibold text-[#191B1C]">
+                      {name || 'Ingredient'}
+                    </span>
+                    {quantity && (
+                      <span className="ml-2 text-sm text-[#595F61]">{quantity}</span>
+                    )}
+                    {note && (
+                      <span className="ml-2 text-sm text-[#595F61]">{note}</span>
+                    )}
+                  </li>
+                );
+              })}
+            </ul>
+          </section>
+        )}
+
         <section aria-labelledby="recipe-steps-title" className="mb-5">
           <div className="flex items-center justify-between gap-3 mb-3">
             <h4 id="recipe-steps-title" className="text-base font-bold text-[#191B1C]">
