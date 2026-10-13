@@ -1,5 +1,6 @@
 import json
 import os
+import time
 from google import genai
 from google.genai import types
 from pathlib import Path
@@ -109,10 +110,12 @@ def generate_meal_plan_with_gemini(payload: dict):
         except json.JSONDecodeError as jde:
             print(f"[MealPlan Error] JSON parse failed for model {model_name}: {jde}")
             last_error = f"JSONDecodeError: {jde}"
+            time.sleep(0.5)  # Brief pause before trying fallback model
             continue
         except Exception as e:
             print(f"[MealPlan Error] Model {model_name} failed: {type(e).__name__}: {e}")
             last_error = e
+            time.sleep(0.5)  # Brief pause before trying fallback model
             continue
     print(f"[MealPlan Error] All Gemini models failed. Last error: {last_error}")
     return None

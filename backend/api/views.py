@@ -2,6 +2,7 @@ import profile
 from requests import request
 import os
 import requests
+import time
 from requests.auth import HTTPBasicAuth
 from django.core.cache import cache
 from django.http import JsonResponse
@@ -115,6 +116,7 @@ def chat_endpoint(request):
             except Exception as e:
                 print(f"Failed {model_name}: {e}")
                 last_error = e
+                time.sleep(0.5)  # Brief pause before trying fallback model
                 continue
 
         print(f"All models failed. Last error: {last_error}")
@@ -200,6 +202,7 @@ def save_chat_endpoint(request):
             except Exception as e:
                 print(f"Failed {model_name}: {e}")
                 last_error = e
+                time.sleep(0.5)  # Brief pause before trying fallback model
                 continue
 
         if extracted_dict is None:
@@ -471,7 +474,11 @@ def build_cart(request):
     cart_items = []
     not_found = []
 
-    for ingredient in ingredients:
+    for i, ingredient in enumerate(ingredients):
+        # Small delay between requests to ensure they do not hit the API all at once
+        if i > 0:
+            time.sleep(0.25)
+
         try:
             match = kroger.best_product_match(ingredient, location_id)
         except Exception as e:

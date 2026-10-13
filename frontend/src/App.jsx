@@ -424,15 +424,13 @@ export function App() {
 
   const handleSignInSuccess = (user) => {
     setCurrentUser(user);
+    setChatMessages(INITIAL_CHAT_MESSAGES); // Start fresh for new user
     setActiveScreen('dashboard');
   };
 
   const handleSignOut = () => {
-    setCurrentUser({
-      email: '',
-      name: 'Guest User',
-      isAuthenticated: false,
-    });
+    setCurrentUser({ email: '', name: 'Guest User', isAuthenticated: false });
+    setChatMessages(INITIAL_CHAT_MESSAGES); // Reset to default greeting
     setActiveScreen('signin');
   };
 
